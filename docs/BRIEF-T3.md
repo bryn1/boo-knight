@@ -1,0 +1,8 @@
+Verify the "Boo Knight" game at /home/claudecode/Games/boo-knight AFTER build (T1) and sprite drop (T2). Godot binary /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64; web export templates for 4.7.2.stable installed in ~/.local/share/godot/export_templates/4.7.2.stable/.
+Steps (all real, no claims):
+1. Re-run headless sim: must print SIM PASS (exit 0) and --plant-bad must print SIM FAIL (exit != 0). Record both transcripts.
+2. Web-export via `godot --headless --export-release "Web" build/web/index.html` (create export_presets.cfg if missing: thread_support OFF so plain http.server works; unique temp user dir if needed). Serve build/web on a free port with python3 http.server in background.
+3. With the Playwright browser MCP: open http://localhost:<port>/index.html, wait for canvas, screenshot title, send keyboard input (arrow right + attack), screenshot gameplay, drive to a death or use the sim evidence for state rules. Capture console errors. Save screenshots under .audits/ (NOT into the repo tree).
+4. Check every sprite listed in docs/SPRITES.md exists in assets/sprites/ and is a non-empty PNG, and that gameplay screenshot shows real art (not placeholder rectangles).
+Evidence file /home/claudecode/Games/boo-knight/.audits/T3-EVIDENCE.md: transcript per step, screenshot paths, port used, final line `VERIFY_EXIT=0` (or 1 with reason). Acceptance rows A1-A6 from docs/BRIEF-PARENT.md with VERIFIED/CONTRADICTED per row.
+DoD: evidence file exists, ends VERIFY_EXIT=0 iff every row VERIFIED, else VERIFY_EXIT=1 with the exact failing step. Never spawn subagents or workflows.

@@ -1,0 +1,2 @@
+T2 (orchestrator-executed via imagegen MCP on vm100 3090): generate all 19 sprites/items listed in docs/SPRITES.md into assets/sprites/ with the exact filenames, transparent backgrounds for characters/items, cute 8-bit style, no gore. Downscale/normalize so files are reasonable size.
+DoD: every filename in docs/SPRITES.md exists under assets/sprites/ as a valid non-empty PNG (checked with `file`), characters have alpha, and docs/SPRITES.md rows are ticked. Evidence: listing + one vision spot-check description appended to .audits/T2-RESULT.md ending `# VERDICT: PASS`.
