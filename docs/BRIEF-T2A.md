@@ -1,0 +1,4 @@
+PROBE: ssh -o BatchMode=yes a3090@192.168.5.230 grep -c 'seq 1 240' /usr/local/sbin/gpu-window => ^1$
+Defect (measured twice, MC 11612 T2 sprite pass blocked): on vm100, `gpu-window open` starts imagegen.service (ComfyUI) then waits only `for i in $(seq 1 90) ... sleep 2` = 180 s for /system_stats, but this ComfyUI build needs ~200-260 s to bind (journal 17:04:00 start -> first plugin init log 17:06:42, killed by rollback at 17:07:22). Every open attempt fails and each failed close stalls llama-swap ~10 min (verifier outage per attempt).
+Fix: raise the comfy_ok wait loop 90 -> 240 iterations (480 s) in infra/gpu-window/gpu-window (source repo) AND on vm100:/usr/local/sbin/gpu-window (backup old file first as gpu-window.bak-<date>).
+Acceptance criteria: `gpu-window open` on vm100 reaches "imagegen healthy" (exit 0) on a cold imagegen start; repo commit pushed; host file md5 == repo file md5; old host file kept as .bak.
