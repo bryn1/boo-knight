@@ -2,7 +2,7 @@
 
 Goal: SMB1-style spooky-cute 8-bit side-scroller for a 6-year-old, GDScript/Godot 4.7.2, browser-served. MC workspace 11611, feature 11612 (anchor rules: cards 11613 T1 code / 11614 T3 test / 11615 T2 sprites / 11617 T2a gpu-window budget / 11641 vm100 IO finding).
 
-STATUS: ACTIVE — game built, core rules browser-verified, all 19 real sprites in (knut VERIFIED); R2 code DONE (art wired, spawn grace, balance spread, re-export served). GPU blocker RESOLVED 2026-10-29.
+STATUS: COMPLETE — acceptance A1-A7 all VERIFIED in real browser + gates; served at http://192.168.5.231:8791/ (2026-10-29)
 
 | date | card | line |
 |---|---|---|
@@ -22,3 +22,4 @@ Acceptance rows (parent 11612): A1 VERIFIED browser · A2 VERIFIED sim · A3 VER
 | 2026-10-29 | 11612 | R3 code DONE: gated debug start-tile hook — ?start=<int> via JSBridge on Web (platform-name guard: 4.7.2 registers JSBridge on desktop too, get_eval answers null-ish off-web) + BOOKNIGHT_START_TILE env on desktop/headless, clamped forward to first solid non-pit non-wall ground tile; unset = byte-for-byte default; zero rule numbers touched; sim exit 0 / plant-bad exit 1, smoke exit 0 + env=160 deep-start assertion exit 0, mutation (clamp dead) exit 1, clamp edges VERIFIED (pit 151->154, 58->61, wall 197->198, past-end -> default); web export exit 0, served :8791 index.pck byte-identical (md5 b0689aa6); evidence .audits/R3-RESULT.md |
 
 Open rounds when unblocked: ~~(R1) sprite batch~~ DONE (T2, commit 09704d6) · ~~(R2) code pass~~ DONE 2026-10-29 (this commit) · (R3) final vision verify, serve + hand URL to owner; release = bryn1/boo-knight repo + LEDGER/README/release notes per GitHub doctrine.
+| 2026-10-29 | 11612 | FINAL: A7 browser VERIFIED (?start=171 hook; orchestrator fixed JS-bridge calls 7f22467+16a8e7d) — Stone Sword pickup + heart_half on screen (.audits/a7-deep-v2.png); A1-A7 all VERIFIED |
