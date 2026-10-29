@@ -14,11 +14,12 @@ static func request_tile() -> int:
 	# platform name gates the call — non-web builds never touch the singleton.
 	var os = Engine.get_singleton("OS")
 	if String(os.get_name()) == "Web" and Engine.has_singleton("JavaScriptBridge"):
-		# get_eval takes the JS source ONLY (4.7: extra args fail the call
-		# silently and the hook reads as unset — fixed in the R3 browser drive);
-		# the "|| ''" keeps a missing query param an empty string, not a JS null.
+		# Godot 4.x JavaScriptBridge API: eval(js, use_return_value) — there is
+		# NO get_eval (that is the Godot 3 name; calling it returned null on
+		# every platform, which the R3 browser drive caught). use_return_value
+		# = true answers the evaluated value. "|| ''" keeps a missing param "".
 		raw = String(Engine.get_singleton("JavaScriptBridge").call(
-			"get_eval", "new URLSearchParams(location.search).get('start') || ''"))
+			"eval", "new URLSearchParams(location.search).get('start') || ''", true))
 	if raw == "":
 		# Engine-lookup because in -s script mode bare `OS` parses as the
 		# class, not the singleton (Godot 4.7 quirk, same as tests/sim.gd).
