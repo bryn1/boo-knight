@@ -22,7 +22,8 @@ const LEVELS: Array[Dictionary] = [
 		"segments": [[0, 57, 19], [61, 85, 19], [89, 150, 19], [154, 227, 19]],
 		"foods": [["apple", 10], ["apple", 24], ["bread", 70], ["apple", 96],
 			["apple", 120], ["bread", 168], ["apple", 200]],
-		"mobs": [["slime", 14, 19], ["slime", 30, 19], ["slime", 66, 19],
+		# Kid-friendly layout: no mob within reach of the spawn tiles (0-12).
+		"mobs": [["slime", 44, 19], ["slime", 52, 19], ["slime", 66, 19],
 			["ghost", 78, 16], ["slime", 95, 19], ["zombie", 110, 19],
 			["slime", 130, 19], ["ghost", 142, 16], ["zombie", 162, 19],
 			["slime", 184, 19]],

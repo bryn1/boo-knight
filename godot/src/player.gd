@@ -1,7 +1,8 @@
 extends CharacterBody2D
 ## The kid knight: forgiving SMB-style movement (coyote time, jump buffering,
 ## variable jump height), sword swing with 0.35 s cooldown, 0.8 s i-frames +
-## knockback after contact damage. Nodes are built by src/factory.gd.
+## knockback after contact damage, and Rules.SPAWN_GRACE s of blinking contact
+## immunity on every fresh spawn. Nodes are built by src/factory.gd.
 
 const Rules := preload("res://src/rules.gd")
 const Art := preload("res://src/art.gd")
@@ -27,6 +28,7 @@ var _sprite: Sprite2D
 
 func _ready() -> void:
 	_sprite = get_node_or_null("Sprite2D") as Sprite2D
+	_invuln = Rules.SPAWN_GRACE  # a fresh spawn (run or level start) blinks, un-hittable
 	attack_area.body_entered.connect(_on_attack_hit)
 
 

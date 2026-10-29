@@ -76,11 +76,28 @@ func _make_tile_set() -> TileSet:
 	var ts := TileSet.new()
 	ts.tile_size = Vector2i(TILE, TILE)
 	var src := TileSetAtlasSource.new()
-	src.texture = Art.texture_for("tile_ground")
+	src.texture = _tile_texture()
 	src.texture_region_size = Vector2i(TILE, TILE)
 	src.create_tile(Vector2i.ZERO)
 	ts.add_source(src, 0)
 	return ts
+
+
+## tile_ground.png is 256x256 but the atlas region is 16x16, so average the
+## texture down into one tile by halving steps (a single 16x bilinear/nearest
+## resize undersamples into moire noise); the placeholder fallback is already
+## 16x16 and passes through untouched.
+func _tile_texture() -> Texture2D:
+	var tex := Art.texture_for("tile_ground")
+	if tex.get_width() == TILE and tex.get_height() == TILE:
+		return tex
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()  # in-place when the format allows it
+	while img.get_width() > TILE:
+		img.resize(maxi(TILE, img.get_width() / 2), maxi(TILE, img.get_height() / 2),
+			Image.INTERPOLATE_BILINEAR)
+	return ImageTexture.create_from_image(img)
 
 
 func _add_solid(center: Vector2, size: Vector2) -> void:

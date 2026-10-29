@@ -1,18 +1,21 @@
 extends RefCounted
-## Art access with fallback: loads the exact res:// paths from docs/SPRITES.md and,
-## while the art pass has not filled assets/sprites/ yet, generates a distinctly
-## colored placeholder texture at the in-game display size so the game always runs.
+## Art access with fallback: loads the real PNGs from assets/sprites/ (imported
+## by `godot --headless --import` before run/export) and, if a PNG is missing or
+## unimported, generates a distinctly colored placeholder texture at the same
+## display size so the game always boots — headless and otherwise.
 
 const DIR := "res://assets/sprites/"
 
 ## key -> {file: manifest filename, size: display size px, color: placeholder color}
+## Portrait mobs/hero are 256x320 (0.8 ratio); display sizes keep that aspect
+## so the real sprites are not squashed when scaled to game pixel size.
 const VIS := {
-	"hero": {"file": "hero.png", "size": Vector2(30, 48), "color": Color(0.2, 0.75, 0.75)},
+	"hero": {"file": "hero.png", "size": Vector2(38, 48), "color": Color(0.2, 0.75, 0.75)},
 	"slime": {"file": "slime.png", "size": Vector2(36, 36), "color": Color(0.3, 0.8, 0.25)},
 	"ghost": {"file": "ghost.png", "size": Vector2(40, 40), "color": Color(0.9, 0.9, 1.0)},
-	"zombie": {"file": "zombie.png", "size": Vector2(28, 44), "color": Color(0.45, 0.65, 0.35)},
-	"skeleton": {"file": "skeleton.png", "size": Vector2(30, 48), "color": Color(0.85, 0.85, 0.8)},
-	"vampire": {"file": "vampire.png", "size": Vector2(32, 48), "color": Color(0.55, 0.35, 0.75)},
+	"zombie": {"file": "zombie.png", "size": Vector2(35, 44), "color": Color(0.45, 0.65, 0.35)},
+	"skeleton": {"file": "skeleton.png", "size": Vector2(38, 48), "color": Color(0.85, 0.85, 0.8)},
+	"vampire": {"file": "vampire.png", "size": Vector2(38, 48), "color": Color(0.55, 0.35, 0.75)},
 	"vampire_lord": {"file": "vampire_lord.png", "size": Vector2(110, 110), "color": Color(0.5, 0.1, 0.35)},
 	"sword_wood": {"file": "sword_wood.png", "size": Vector2(24, 24), "color": Color(0.55, 0.35, 0.2)},
 	"sword_stone": {"file": "sword_stone.png", "size": Vector2(24, 24), "color": Color(0.6, 0.6, 0.6)},

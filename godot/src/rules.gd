@@ -33,6 +33,9 @@ const CHEST_SWORD := {1: "stone", 2: "iron", 3: "diamond"}
 
 const ATTACK_COOLDOWN := 0.35  # seconds between sword swings
 const INVULN_TIME := 0.8  # seconds of player invulnerability after a hit
+## Kid-friendly grace: seconds of contact-damage immunity at the start of every
+## run AND every level (the player node is freshly spawned for each).
+const SPAWN_GRACE := 3.0
 
 
 static func sword_damage(sword: String) -> int:

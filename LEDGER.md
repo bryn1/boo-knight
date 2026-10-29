@@ -2,7 +2,7 @@
 
 Goal: SMB1-style spooky-cute 8-bit side-scroller for a 6-year-old, GDScript/Godot 4.7.2, browser-served. MC workspace 11611, feature 11612 (anchor rules: cards 11613 T1 code / 11614 T3 test / 11615 T2 sprites / 11617 T2a gpu-window budget / 11641 vm100 IO finding).
 
-STATUS: ACTIVE — game built & core rules browser-verified; art pass BLOCKED on vm100 storage (MC 11641, owner decision pending).
+STATUS: ACTIVE — game built, core rules browser-verified, all 19 real sprites in (knut VERIFIED); R2 code DONE (art wired, spawn grace, balance spread, re-export served). GPU blocker RESOLVED 2026-10-29.
 
 | date | card | line |
 |---|---|---|
@@ -12,6 +12,12 @@ STATUS: ACTIVE — game built & core rules browser-verified; art pass BLOCKED on
 | 2026-10-28 | 11614 | T3 pass1: A1-A5 VERIFIED in real browser + sim; A6 pending art; A7 browser leg pending balance fix; P2 balance finding (spawn slimes kill in 5-12s) |
 | 2026-10-28 | 11641 | vm100 storage finding: ~3.5MB/s cap, IO PSI ~85% idle; owner options filed (NVMe / mlock / quiet-hours batching) |
 
-Acceptance rows (parent 11612): A1 VERIFIED browser · A2 VERIFIED sim · A3 VERIFIED sim · A4 VERIFIED sim · A5 VERIFIED sim+browser · A6 PENDING (sprites, blocked by 11641) · A7 sim VERIFIED, browser pending balance-fix round.
+Acceptance rows (parent 11612): A1 VERIFIED browser · A2 VERIFIED sim · A3 VERIFIED sim · A4 VERIFIED sim · A5 VERIFIED sim+browser · A6 VERIFIED R2 (real sprites render in browser + ART REAL in smoke; no-art fallback boots) · A7 VERIFIED R2 (3 s grace: headless probe 30->30 in-grace / 30->28 after; slimes >=42 tiles from spawn; browser walk + 0 console errors; full-vision pass is R3).
 
-Open rounds when unblocked: (R1) sprite batch on fixed/decided GPU path -> assets/sprites; (R2) code pass: spawn-balance fix + wire real art + drive A7 in browser; (R3) re-export, final vision verify, serve + hand URL to owner; release = bryn1/boo-knight repo + LEDGER/README/release notes per GitHub doctrine.
+| 2026-10-29 | 11613 | knut VERIFIED (T1 close stood) |
+| 2026-10-29 | 11615 | T2 sprites DONE: owner unblocked vm100 ("Vm100 and comfy ui up and tunning"); 19 renders in one clean window (~40s ea), published as manifest filenames, commit 09704d6, knut VERIFIED |
+| 2026-10-29 | 11641 | RESOLVED by owner session: llama-swap --load-mode dio (eviction war ended; reload preserves torch page-cache, disk PSI ~0, reload 19s) + gpu-window 1320s budget squash-landed to agent-town master (801e4d6d); card cancelled; gwfix branch redundant, removed |
+| 2026-10-29 | 11612 | R2 round spawned: wire real art + kid-friendly spawn grace + re-export; then browser A7 + final vision pass |
+| 2026-10-29 | 11612 | R2 code DONE: real sprites wired (--import step, aspect-true display sizes, ground tile 256->16 halving-average, heart_half HUD live), 3 s spawn contact-grace per run/level (blinks via existing i-frame code), L1 first slimes 14/30->44/52 (min spawn-mob dist 12->42 tiles; no rule numbers touched); sim 24 PASS exit 0, --plant-bad exit 1; smoke exit 0 "ART REAL"+SMOKE OK, mutation exit 1 (assembly assertion added, false-green closed); no-art fallback boot exit 0; web re-export exit 0, pck 43KB->3.16MB with all 19 ctex, served :8791 byte-identical; browser 0 console errors, title+gameplay art screenshots (.audits/) |
+
+Open rounds when unblocked: ~~(R1) sprite batch~~ DONE (T2, commit 09704d6) · ~~(R2) code pass~~ DONE 2026-10-29 (this commit) · (R3) final vision verify, serve + hand URL to owner; release = bryn1/boo-knight repo + LEDGER/README/release notes per GitHub doctrine.
