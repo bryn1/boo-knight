@@ -7,6 +7,7 @@ signal level_done
 signal boss_died
 
 const Art := preload("res://src/art.gd")
+const DebugStart := preload("res://src/debug_start.gd")
 
 const TILE := 16
 const TILE_ROWS := 4  # ground thickness below the surface row
@@ -121,6 +122,11 @@ func _spawn_player() -> void:
 	p.collision_layer = 2
 	p.collision_mask = 1 | 8
 	var start: Vector2 = data["start"]
+	var want := DebugStart.request_tile()  # gated debug override, -1 when off
+	if want >= 0:
+		var safe := DebugStart.clamp_to_ground(data, want)
+		if safe.x >= 0:
+			start = safe
 	p.position = Vector2(start.x * TILE + TILE * 0.5, start.y * TILE - 24.0)
 	var sp := Art.make_sprite("hero")
 	p.add_child(sp)

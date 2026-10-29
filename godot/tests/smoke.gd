@@ -8,6 +8,8 @@ extends Node2D
 ## Run: godot --headless --path godot res://tests/smoke.tscn
 
 const Art := preload("res://src/art.gd")
+const Level := preload("res://src/level.gd")
+const DebugStart := preload("res://src/debug_start.gd")
 
 func _ready() -> void:
 	var game_scene: Node = load("res://scenes/main.tscn").instantiate()
@@ -29,6 +31,16 @@ func _ready() -> void:
 			print("SMOKE FAIL: level %d did not assemble a player" % lvl)
 			get_tree().quit(1)
 			return
+		# Debug start-tile assertion (MC 11612): with BOOKNIGHT_START_TILE set
+		# (gate runs it as 160) the clamp must land the hero deep in level 1,
+		# tile > 100 — never at the default tile 2. Skipped when the override
+		# is off, so the plain smoke path is unchanged.
+		if lvl == 1 and DebugStart.request_tile() >= 0:
+			var tile := int(game_scene.level_node.player.position.x / float(Level.TILE))
+			if tile <= 100:
+				print("SMOKE FAIL: start-tile override active but player tile %d <= 100" % tile)
+				get_tree().quit(1)
+				return
 	var hero_tex := Art.texture_for("hero")
 	var tile_tex := Art.texture_for("tile_ground")
 	var heart_tex := Art.texture_for("heart")
