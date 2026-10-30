@@ -3,3 +3,5 @@ build/
 *.import
 .audits/
 .godot/
+.serve/*.key
+.serve/*.crt
