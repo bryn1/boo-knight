@@ -30,3 +30,18 @@ The engine shows them at small display sizes with nearest-neighbor filtering (pi
 
 Naming is FIXED — the code loads exactly these paths and falls back to colored placeholders
 when a file is missing (so build and art pass are independent).
+
+## Animation frames (T4a, MC 11716, 2026-10-30)
+
+Owner ask: characters animate while moving + hero attack frames + facing.
+16 add-on frames rendered on vm100 in edit-mode locked to the base masters:
+hero_walk_a/b (walk cycle), hero_attack_a/b (wind-up + follow-through),
+slime_move_a/b (squash/stretch), ghost_move_a/b (float high/low),
+zombie_walk_a/b, skeleton_walk_a/b (sword up/low), vampire_walk_a/b (cape
+closed/open), vampire_lord_float_a/b (hover high/sink low). Library masters:
+hero-walk-a-3, hero-walk-b-1, hero-attack-a-1, hero-attack-b-1, slime-move-a-1,
+slime-move-b-1, ghost-move-a-1, ghost-move-b-1, zombie-walk-a-2, zombie-walk-b-2,
+skeleton-walk-a-1, skeleton-walk-b-1, vampire-walk-a-1, vampire-walk-b-1,
+vampire-lord-float-a-1, vampire-lord-float-b-1. Rejected in QA: hero-walk-a-1/-2
+(second blade artifact), zombie-walk-a-1 (shirt color drift), zombie-walk-b-1
+(purple shirt vs locked lavender pair). Facing flip = code (T4b), not mirrored art.
