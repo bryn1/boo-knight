@@ -1,0 +1,9 @@
+T5b (MC CARD-ID-TBD) — v1.0.0 GA release of Boo Knight to GitHub (orchestrator-executed, owner artifact: "Rec publiah" 2026-10-30). Fleet doctrine rows, all must hold in the same push (GitHub-Release doctrine):
+
+1. Public repo bryn1/boo-knight created via gh (authenticated as bryn1), PUBLIC (shareable link is the point), description one line.
+2. master pushed over the ssh account remote (git@github.com-bryn1:boo-knight) after running the fleet pre-push secret scanner over the tree (infra/gates/pre-push-secret-scan.sh from ~/agent-town; if the hook is not installed in this repo, run the scanner manually and attach its clean output — a blocked scanner is a finding, never a bypass).
+3. GitHub Pages live at https://bryn1.github.io/boo-knight/ served from a gh-pages branch containing ONLY the web build (index.html/js/wasm/pck, plus favicon if any) — built artifacts never in master. Pages enabled via gh api; wait for provisioning.
+4. Tag v1.0.0 on the GA commit + GitHub Release v1.0.0 whose body is the committed RELEASE_NOTES-v1.0.0.md content (committed artifact row of doctrine), asset: boo-knight-web-v1.0.0.zip (the four build files zipped).
+5. Post-publish acceptance (runtime-verification doctrine, external): Pages URL answers 200 over https; index.wasm served with a wasm MIME; the page actually RENDERS the title screen (browser + vision, not just curl); zero console errors on load; the title art and hero load (pck fetched 200).
+6. Trail: LEDGER row + PROJECTS.md row for bryn1/boo-knight (built, GA date), both committed before the tag; MC card closed with PROBE lines using FINAL static values only (release id / tag sha — compute after creating, never guess).
+Deliverable evidence: .audits/T5-RELEASE-EVIDENCE.md with every command measured (no pipes for exit codes), the Pages acceptance outputs (MIME header line, 200 line), release URL, ending VERIFY_EXIT=0.
