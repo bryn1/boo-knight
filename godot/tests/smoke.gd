@@ -6,6 +6,8 @@ extends Node2D
 ## fallbacks are loaded — run `godot --headless --path godot --import` first
 ## for the real-art check to read real.
 ## Run: godot --headless --path godot res://tests/smoke.tscn
+## T4b (MC 11715) adds ANIM (hero_walk frame list REAL when assets imported)
+## and FACING (flip_h true after left input, false after right) assertions.
 
 const Art := preload("res://src/art.gd")
 const Level := preload("res://src/level.gd")
@@ -52,5 +54,38 @@ func _ready() -> void:
 		hero_tex.get_width(), hero_tex.get_height(),
 		tile_tex.get_width(), tile_tex.get_height(),
 		heart_tex.get_width(), heart_tex.get_height()])
+	# T4b assertions (MC 11715). 1) With real art imported, hero_walk must
+	# resolve to the REAL 2-frame list — red if the loader regresses to a
+	# single texture while the PNGs are there. Skipped on placeholder runs,
+	# where a 1-frame fallback list is the correct behaviour.
+	var walk := Art.frames_for("hero_walk")
+	print("ANIM hero_walk=%d frame%s" % [walk.size(), "" if walk.size() == 1 else "s"])
+	if art_real and walk.size() < 2:
+		print("SMOKE FAIL: hero_walk resolved to %d frame(s) while hero art is REAL" % walk.size())
+		get_tree().quit(1)
+		return
+	# 2) Facing: after a simulated LEFT-move the hero sprite must be flip_h,
+	# after a RIGHT-move not (art defaults right; flip is visual only).
+	var hero: Node = game_scene.level_node.player
+	var hero_sprite: Sprite2D = hero.get_node_or_null("Sprite2D")
+	if hero_sprite == null:
+		print("SMOKE FAIL: hero has no Sprite2D to check facing on")
+		get_tree().quit(1)
+		return
+	Input.action_press("move_left")
+	for i in 3:
+		await get_tree().physics_frame
+	var left_flip := hero_sprite.flip_h
+	Input.action_release("move_left")
+	Input.action_press("move_right")
+	for i in 3:
+		await get_tree().physics_frame
+	var right_flip := hero_sprite.flip_h
+	Input.action_release("move_right")
+	print("FACING left_flip=%s right_flip=%s" % [left_flip, right_flip])
+	if left_flip != true or right_flip != false:
+		print("SMOKE FAIL: facing left_flip=%s (want true) right_flip=%s (want false)" % [left_flip, right_flip])
+		get_tree().quit(1)
+		return
 	print("SMOKE OK")
 	get_tree().quit(0)

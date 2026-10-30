@@ -14,6 +14,7 @@ const COYOTE_TIME := 0.10
 const JUMP_BUFFER := 0.12
 const ATTACK_ACTIVE := 0.12
 const FALL_DAMAGE_Y := 460.0
+const WALK_FPS := 7.0
 
 var facing := 1.0
 var attack_area: Area2D  # assigned by factory
@@ -24,10 +25,18 @@ var _cooldown := 0.0
 var _attack_time := 0.0
 var _invuln := 0.0
 var _sprite: Sprite2D
+var _walk_frames: Array[Texture2D]
+var _attack_frames: Array[Texture2D]
+var _idle_tex: Texture2D
+var _anim_t := 0.0
+var _atk_t := 0.0
 
 
 func _ready() -> void:
 	_sprite = get_node_or_null("Sprite2D") as Sprite2D
+	_walk_frames = Art.frames_for("hero_walk")
+	_attack_frames = Art.frames_for("hero_attack")
+	_idle_tex = Art.texture_for("hero")
 	_invuln = Rules.SPAWN_GRACE  # a fresh spawn (run or level start) blinks, un-hittable
 	attack_area.body_entered.connect(_on_attack_hit)
 
@@ -66,6 +75,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("attack") and _cooldown <= 0.0:
 		_cooldown = Rules.ATTACK_COOLDOWN
 		_attack_time = ATTACK_ACTIVE
+		_atk_t = 0.0
 	if _attack_time > 0.0:
 		_attack_time -= delta
 		attack_area.monitoring = true
@@ -77,11 +87,32 @@ func _physics_process(delta: float) -> void:
 	if _sprite != null:
 		var visible_now := 1.0 if _invuln <= 0.0 or int(_invuln * 20.0) % 2 == 0 else 0.25
 		_sprite.modulate.a = visible_now
+		_update_frame(dir, delta)
 
 	if _sprite != null:
-		_sprite.flip_h = facing < 0.0
+		_sprite.flip_h = facing < 0.0  # art faces right; visuals only, hitbox uses facing
 
 	move_and_slide()
+
+
+## Visual only: idle frame standing, walk cycle (~WALK_FPS) grounded+moving,
+## attack a->b across the existing ATTACK_ACTIVE window. Frame lists fall back
+## to the single base texture when the PNGs are missing, so the look is then
+## identical to pre-animation.
+func _update_frame(dir: float, delta: float) -> void:
+	var frames: Array[Texture2D] = _walk_frames
+	var idx := 0
+	if _attack_time > 0.0:
+		_atk_t += delta
+		frames = _attack_frames
+		idx = clampi(int(_atk_t / (ATTACK_ACTIVE / float(frames.size()))), 0, frames.size() - 1)
+	elif is_on_floor() and dir != 0.0:
+		_anim_t += delta
+		idx = int(_anim_t * WALK_FPS) % frames.size()
+	else:
+		_anim_t = 0.0
+		frames = [_idle_tex]
+	Art.apply_frame(_sprite, "hero", frames[idx])
 
 
 ## Called by mobs on contact (mob.gd / ghost radius check).

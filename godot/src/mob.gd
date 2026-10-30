@@ -10,6 +10,14 @@ const Art := preload("res://src/art.gd")
 
 const GRAVITY := 620.0
 const MAX_FALL := 400.0
+const ANIM_FPS := 6.0
+
+## mob type -> ANIMS key in art.gd for its 2-frame move cycle.
+const MOVE_ANIM := {
+	"slime": "slime_move", "ghost": "ghost_move", "zombie": "zombie_walk",
+	"skeleton": "skeleton_walk", "vampire": "vampire_walk",
+	"vampire_lord": "vampire_lord_float",
+}
 
 var mob_type := "slime"
 var hp := 2
@@ -23,6 +31,8 @@ var elapsed := 0.0
 var patrol_home := Vector2.ZERO
 var _sprite: Sprite2D
 var _dead := false
+var _frames: Array[Texture2D] = []
+var _anim_t := 0.0
 
 
 func setup(type: String) -> void:
@@ -37,6 +47,10 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	_sprite = get_node_or_null("Sprite2D") as Sprite2D
+	if MOVE_ANIM.has(mob_type):
+		_frames = Art.frames_for(MOVE_ANIM[mob_type])
+	else:
+		_frames = [Art.texture_for(mob_type)]
 
 
 func _physics_process(delta: float) -> void:
@@ -52,6 +66,22 @@ func _physics_process(delta: float) -> void:
 	else:
 		global_position += velocity * delta
 		_check_radius_touch()
+	_animate(delta)
+
+
+## Visual only: cycle the 2 move frames while moving (vampire_lord's float
+## frames cycle always); sprite flips to face its movement direction (art
+## defaults right). Missing frame files leave a single-texture mob unchanged.
+func _animate(delta: float) -> void:
+	if _sprite == null:
+		return
+	_sprite.flip_h = facing < 0.0
+	if mob_type != "vampire_lord" and absf(velocity.x) <= 1.0:
+		_anim_t = 0.0
+		Art.apply_frame(_sprite, mob_type, _frames[0])
+		return
+	_anim_t += delta
+	Art.apply_frame(_sprite, mob_type, _frames[int(_anim_t * ANIM_FPS) % _frames.size()])
 
 
 ## Default behavior: walk a patrol beat around the spawn point.

@@ -31,11 +31,60 @@ const VIS := {
 	"title": {"file": "title.png", "size": Vector2(640, 360), "color": Color(0.1, 0.05, 0.2)},
 }
 
+## Animation keys -> frame-file pairs (T4b, see docs/SPRITES.md). All frames
+## face RIGHT; code flips them for left-facing. base is the VIS key whose
+## display size + placeholder apply. If any frame file is missing or
+## unimported, frames_for returns the single base texture (real or
+## placeholder) so callers behave exactly as before the frames landed.
+const ANIMS := {
+	"hero_walk": {"base": "hero", "frames": ["hero_walk_a.png", "hero_walk_b.png"]},
+	"hero_attack": {"base": "hero", "frames": ["hero_attack_a.png", "hero_attack_b.png"]},
+	"slime_move": {"base": "slime", "frames": ["slime_move_a.png", "slime_move_b.png"]},
+	"ghost_move": {"base": "ghost", "frames": ["ghost_move_a.png", "ghost_move_b.png"]},
+	"zombie_walk": {"base": "zombie", "frames": ["zombie_walk_a.png", "zombie_walk_b.png"]},
+	"skeleton_walk": {"base": "skeleton", "frames": ["skeleton_walk_a.png", "skeleton_walk_b.png"]},
+	"vampire_walk": {"base": "vampire", "frames": ["vampire_walk_a.png", "vampire_walk_b.png"]},
+	"vampire_lord_float": {"base": "vampire_lord", "frames": ["vampire_lord_float_a.png", "vampire_lord_float_b.png"]},
+}
+
 static var _cache := {}
+static var _frames_cache := {}
 
 
 static func display_size(key: String) -> Vector2:
 	return VIS[key]["size"]
+
+
+## Frame list for an ANIMS key, cached. >1 entry only when every frame PNG
+## loaded; otherwise the single base texture via texture_for (fallback path).
+static func frames_for(anim: String) -> Array[Texture2D]:
+	if _frames_cache.has(anim):
+		return _frames_cache[anim]
+	var a: Dictionary = ANIMS[anim]
+	var frames: Array[Texture2D] = []
+	for file in a["frames"]:
+		var path := DIR + String(file)
+		var tex: Texture2D = null
+		if ResourceLoader.exists(path):
+			var res := load(path)
+			if res is Texture2D:
+				tex = res
+		if tex == null:
+			frames = [texture_for(String(a["base"]))]
+			break
+		frames.append(tex)
+	_frames_cache[anim] = frames
+	return frames
+
+
+## Paint one animation frame on an existing sprite at the base key's display
+## size (same scaling rule as make_sprite). No-op when already showing it.
+static func apply_frame(sprite: Sprite2D, base_key: String, tex: Texture2D) -> void:
+	if sprite.texture == tex:
+		return
+	var want: Vector2 = VIS[base_key]["size"]
+	sprite.texture = tex
+	sprite.scale = Vector2(want.x / float(tex.get_width()), want.y / float(tex.get_height()))
 
 
 static func texture_for(key: String) -> Texture2D:
@@ -61,6 +110,7 @@ static func texture_for(key: String) -> Texture2D:
 ## real PNG landed (scaled down, nearest filter keeps the pixel look) or not.
 static func make_sprite(key: String) -> Sprite2D:
 	var sp := Sprite2D.new()
+	sp.name = "Sprite2D"  # runtime spawns otherwise get @-names, breaking get_node_or_null("Sprite2D") lookups
 	var tex := texture_for(key)
 	sp.texture = tex
 	var want: Vector2 = VIS[key]["size"]
