@@ -121,8 +121,10 @@ func _flash() -> void:
 
 func _poof() -> void:
 	_dead = true
-	set_collision_layer(0)
-	set_collision_mask(0)
+	# _poof runs inside the physics flush (via _physics_process contact);
+	# changing collision state mid-flush errors in-engine. Defer both (MC 11740 follow-up).
+	set_deferred("collision_layer", 0)
+	set_deferred("collision_mask", 0)
 	died.emit(mob_type)
 	if _sprite != null:
 		_sprite.flip_h = false
