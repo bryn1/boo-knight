@@ -1,4 +1,4 @@
-T5b (MC CARD-ID-TBD) — v1.0.0 GA release of Boo Knight to GitHub (orchestrator-executed, owner artifact: "Rec publiah" 2026-10-30). Fleet doctrine rows, all must hold in the same push (GitHub-Release doctrine):
+T5b (MC 11729 (pre-claim id; verify)) — v1.0.0 GA release of Boo Knight to GitHub (orchestrator-executed, owner artifact: "Rec publiah" 2026-10-30). Fleet doctrine rows, all must hold in the same push (GitHub-Release doctrine):
 
 1. Public repo bryn1/boo-knight created via gh (authenticated as bryn1), PUBLIC (shareable link is the point), description one line.
 2. master pushed over the ssh account remote (git@github.com-bryn1:boo-knight) after running the fleet pre-push secret scanner over the tree (infra/gates/pre-push-secret-scan.sh from ~/agent-town; if the hook is not installed in this repo, run the scanner manually and attach its clean output — a blocked scanner is a finding, never a bypass).
@@ -8,3 +8,6 @@ T5b (MC CARD-ID-TBD) — v1.0.0 GA release of Boo Knight to GitHub (orchestrator
 6. Trail: LEDGER row + PROJECTS.md row for bryn1/boo-knight (built, GA date), both committed before the tag; MC card closed with PROBE lines using FINAL static values only (release id / tag sha — compute after creating, never guess).
 Deliverable evidence: .audits/T5-RELEASE-EVIDENCE.md with every command measured (no pipes for exit codes), the Pages acceptance outputs (MIME header line, 200 line), release URL, ending VERIFY_EXIT=0.
 DoD: git ls-remote origin refs/tags/v1.0.0 returns the tag sha AND gh release view v1.0.0 --repo bryn1/boo-knight exits 0 AND curl -sI https://bryn1.github.io/boo-knight/index.wasm shows HTTP/2 200 with a wasm content-type AND a browser screenshot of https://bryn1.github.io/boo-knight/ shows the Boo Knight title screen with zero console errors.
+PROBE: git -C /home/claudecode/Games/boo-knight ls-remote origin refs/tags/v1.0.0 => refs/tags/v1[.]0[.]0$
+PROBE: gh release view v1.0.0 --repo bryn1/boo-knight --json tagName -q .tagName => ^v1[.]0[.]0$
+DoD: the tag v1.0.0 exists on origin AND gh release v1.0.0 exists AND https://bryn1.github.io/boo-knight/ renders the title screen with zero console errors (browser-verified at close).
