@@ -2,7 +2,7 @@
 
 Goal: SMB1-style spooky-cute 8-bit side-scroller for a 6-year-old, GDScript/Godot 4.7.2, browser-served. MC workspace 11611, feature 11612 (anchor rules: cards 11613 T1 code / 11614 T3 test / 11615 T2 sprites / 11617 T2a gpu-window budget / 11641 vm100 IO finding).
 
-STATUS: COMPLETE — acceptance A1-A7 all VERIFIED in real browser + gates; served at http://192.168.5.231:8791/ (2026-10-29)
+STATUS: COMPLETE — acceptance A1-A7 all VERIFIED in real browser + gates; T4 animation SHIPPED (16 frames + hero/mob facing, 2026-10-30); served at https://192.168.5.231:8792/ (plain http://192.168.5.231:8791/ now 301-redirects there — Godot web needs a secure context; see OPS/OPS2 rows + commits 7dea84c/e21908c)
 
 | date | card | line |
 |---|---|---|
