@@ -45,3 +45,18 @@ skeleton-walk-a-1, skeleton-walk-b-1, vampire-walk-a-1, vampire-walk-b-1,
 vampire-lord-float-a-1, vampire-lord-float-b-1. Rejected in QA: hero-walk-a-1/-2
 (second blade artifact), zombie-walk-a-1 (shirt color drift), zombie-walk-b-1
 (purple shirt vs locked lavender pair). Facing flip = code (T4b), not mirrored art.
+
+## Boss-king frames (T6a, MC 11732, 2026-10-30)
+
+Owners' gauntlet request: after the (now gentler) Vampire Lord, each boss kill raises the
+world's difficulty and the next king appears. Four kings, each a base pose + 2-frame
+animation pair, edit-mode-locked to the matching mob's library master:
+
+| sprite | frames | library masters (accepted) | QA notes |
+|---|---|---|---|
+| `slime_king.png` | `_a/_b` squash-bounce | slime-king-1, slime-king-a-1, slime-king-b-1 | spoon-scepter kept as deliberate comedy |
+| `ghost_king.png` | `_a/_b` float down/up | ghost-king-1b, ghost-king-a-1b, ghost-king-b-1 | REJECTED: ghost-king-1 (no crown), ghost-king-a-1 (double-crown artifact) |
+| `zombie_king.png` | `_a/_b` shamble L/R | zombie-king-1, zombie-king-a-1, zombie-king-b-1 | brown shirt locked from base (T4a lesson applied) |
+| `skeleton_king.png` | `_a/_b` royal march | skeleton-king-1, skeleton-king-a-1, skeleton-king-b-1 | red ermine cape; crown between skull plates |
+
+Contact sheets: `.audits/kings-contact.png` (all 12), `.audits/ghost-king-recheck.png` (reject-fix trio). QA gates: pair-color drift, crown presence, no extra props, no gore — all PASS.
