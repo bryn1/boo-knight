@@ -1,5 +1,6 @@
 extends "res://src/mob.gd"
-## Boss: paces the arena fast. HP 10, touch 6 — dying to it is the win condition.
+## Gauntlet boss 1: paces the arena fast. T6b amendment (MC 11740): HP 6,
+## touch 3; killing him no longer wins the game — the king ladder begins.
 
 func _ready() -> void:
 	super()

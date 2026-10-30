@@ -7,6 +7,7 @@ signal level_done
 signal boss_died
 
 const Art := preload("res://src/art.gd")
+const Rules := preload("res://src/rules.gd")
 const DebugStart := preload("res://src/debug_start.gd")
 
 const TILE := 16
@@ -18,6 +19,11 @@ const MOB_SCRIPTS := {
 	"skeleton": preload("res://src/mobs/skeleton.gd"),
 	"vampire": preload("res://src/mobs/vampire.gd"),
 	"vampire_lord": preload("res://src/mobs/vampire_lord.gd"),
+	# T6b kings (MC 11740) move like their mob kind — one thin subclass each.
+	"slime_king": preload("res://src/mobs/slime_king.gd"),
+	"ghost_king": preload("res://src/mobs/ghost_king.gd"),
+	"zombie_king": preload("res://src/mobs/zombie_king.gd"),
+	"skeleton_king": preload("res://src/mobs/skeleton_king.gd"),
 }
 
 var data: Dictionary = {}
@@ -194,7 +200,7 @@ func _spawn_mob(mtype: String, tx: int, row: int) -> CharacterBody2D:
 	mob.collision_layer = 8
 	mob.collision_mask = 1 | 2
 	mob.position = Vector2(tx * TILE + TILE * 0.5, row * TILE)
-	mob.setup(mtype)
+	mob.setup(mtype, int(data.get("tier", 0)))  # T6b tier scales normal mobs only
 	var size: Vector2 = Art.display_size(mtype)
 	mob.position.y -= size.y * 0.5
 	var sp := Art.make_sprite(mtype)
@@ -227,5 +233,5 @@ func _spawn_pickup(script: GDScript, key: String, kind: String, tx: Variant, row
 
 
 func _on_mob_died(mtype: String) -> void:
-	if mtype == "vampire_lord":
+	if Rules.is_boss(mtype):  # lord OR any gauntlet king (T6b: game continues)
 		boss_died.emit()

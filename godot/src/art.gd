@@ -17,6 +17,11 @@ const VIS := {
 	"skeleton": {"file": "skeleton.png", "size": Vector2(38, 48), "color": Color(0.85, 0.85, 0.8)},
 	"vampire": {"file": "vampire.png", "size": Vector2(38, 48), "color": Color(0.55, 0.35, 0.75)},
 	"vampire_lord": {"file": "vampire_lord.png", "size": Vector2(110, 110), "color": Color(0.5, 0.1, 0.35)},
+	# T6b gauntlet kings (MC 11740): square 1024 art, display sizes keep that aspect.
+	"slime_king": {"file": "slime_king.png", "size": Vector2(60, 60), "color": Color(0.2, 0.55, 0.2)},
+	"ghost_king": {"file": "ghost_king.png", "size": Vector2(68, 68), "color": Color(0.8, 0.8, 0.95)},
+	"zombie_king": {"file": "zombie_king.png", "size": Vector2(62, 62), "color": Color(0.35, 0.5, 0.28)},
+	"skeleton_king": {"file": "skeleton_king.png", "size": Vector2(66, 66), "color": Color(0.8, 0.8, 0.72)},
 	"sword_wood": {"file": "sword_wood.png", "size": Vector2(24, 24), "color": Color(0.55, 0.35, 0.2)},
 	"sword_stone": {"file": "sword_stone.png", "size": Vector2(24, 24), "color": Color(0.6, 0.6, 0.6)},
 	"sword_iron": {"file": "sword_iron.png", "size": Vector2(24, 24), "color": Color(0.8, 0.85, 0.9)},
@@ -45,6 +50,11 @@ const ANIMS := {
 	"skeleton_walk": {"base": "skeleton", "frames": ["skeleton_walk_a.png", "skeleton_walk_b.png"]},
 	"vampire_walk": {"base": "vampire", "frames": ["vampire_walk_a.png", "vampire_walk_b.png"]},
 	"vampire_lord_float": {"base": "vampire_lord", "frames": ["vampire_lord_float_a.png", "vampire_lord_float_b.png"]},
+	# T6b kings animate with their mob kind's cycle style (bounce/float/shamble/march).
+	"slime_king_move": {"base": "slime_king", "frames": ["slime_king_a.png", "slime_king_b.png"]},
+	"ghost_king_move": {"base": "ghost_king", "frames": ["ghost_king_a.png", "ghost_king_b.png"]},
+	"zombie_king_walk": {"base": "zombie_king", "frames": ["zombie_king_a.png", "zombie_king_b.png"]},
+	"skeleton_king_walk": {"base": "skeleton_king", "frames": ["skeleton_king_a.png", "skeleton_king_b.png"]},
 }
 
 static var _cache := {}

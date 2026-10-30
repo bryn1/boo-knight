@@ -14,7 +14,11 @@ The engine shows them at small display sizes with nearest-neighbor filtering (pi
 | zombie.png | small green cartoon zombie, goofy grin, tattered purple shirt | 256x320 | ~44 px | HP 4, walks |
 | skeleton.png | cartoon skeleton with rusty sword, hollow-eye grin | 256x320 | ~48 px | HP 6, walks |
 | vampire.png | small vampire kid, purple cape, fangs, friendly-mischievous | 256x320 | ~48 px | HP 8, dashes |
-| vampire_lord.png | BOSS: big vampire lord, crown + cape, imposing but cartoonish | 512x512 | ~110 px | HP 10 |
+| vampire_lord.png | BOSS: big vampire lord, crown + cape, imposing but cartoonish | 512x512 | ~110 px | HP 6, touch 3 (T6b gentler-lord amendment MC 11740) |
+| slime_king.png | BOSS ladder 1: crowned slime king (+_a/_b bounce), see §Boss-king frames | 1024x1024 | ~60 px | HP 8, touch 3 |
+| ghost_king.png | BOSS ladder 2: crowned ghost king (+_a/_b float) | 1024x1024 | ~68 px | HP 8, touch 3 |
+| zombie_king.png | BOSS ladder 3: crowned zombie king (+_a/_b shamble) | 1024x1024 | ~62 px | HP 9, touch 4 |
+| skeleton_king.png | BOSS ladder 4: crowned skeleton king (+_a/_b march) | 1024x1024 | ~66 px | HP 10, touch 4 |
 | sword_wood.png | brown wooden sword icon, blade pointing UP | 256x256 | HUD item 24 px | dmg 1 (start gear) |
 | sword_stone.png | grey stone sword icon, blade UP | 256x256 | 24 px | dmg 2 |
 | sword_iron.png | shiny steel sword icon, blade UP | 256x256 | 24 px | dmg 3 |

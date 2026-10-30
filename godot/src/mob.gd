@@ -12,11 +12,14 @@ const GRAVITY := 620.0
 const MAX_FALL := 400.0
 const ANIM_FPS := 6.0
 
-## mob type -> ANIMS key in art.gd for its 2-frame move cycle.
+## mob type -> ANIMS key in art.gd for its 2-frame move cycle. Gauntlet kings
+## (T6b) reuse their mob kind's cycle style: bounce / float / shamble / march.
 const MOVE_ANIM := {
 	"slime": "slime_move", "ghost": "ghost_move", "zombie": "zombie_walk",
 	"skeleton": "skeleton_walk", "vampire": "vampire_walk",
 	"vampire_lord": "vampire_lord_float",
+	"slime_king": "slime_king_move", "ghost_king": "ghost_king_move",
+	"zombie_king": "zombie_king_walk", "skeleton_king": "skeleton_king_walk",
 }
 
 var mob_type := "slime"
@@ -35,10 +38,12 @@ var _frames: Array[Texture2D] = []
 var _anim_t := 0.0
 
 
-func setup(type: String) -> void:
+## tier (T6b difficulty): normal mobs get +1 hp / +1 contact per tier, bosses
+## keep their fixed law stats (rules.gd applies both the caps and the exemption).
+func setup(type: String, tier: int = 0) -> void:
 	mob_type = type
-	hp = Rules.mob_hp(type)
-	touch_dmg = Rules.mob_touch_damage(type)
+	hp = Rules.mob_hp(type, tier)
+	touch_dmg = Rules.mob_touch_damage(type, tier)
 
 
 func _enter_tree() -> void:

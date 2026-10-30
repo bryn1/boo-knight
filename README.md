@@ -57,8 +57,13 @@ On a touch device: ◀ ▶ walk, ⚔ sword, ▲ jump.
 - **Apples and bread** lie around the levels: an apple patches you up a little, bread a lot,
   never past full.
 - The monsters are tougher in different ways — a slime is easy, a skeleton takes several
-  hits, and the Vampire Lord takes many. This is what the better swords are for.
-- **Three levels**, and at the end of the third one the **Vampire Lord** is waiting.
+  hits. This is what the better swords are for.
+- **Three levels**, and at the end of the third one the **Vampire Lord** is waiting. When he
+  goes down, the **Boss-King Gauntlet** starts: a **Slime King**, a **Ghost King**, a
+  **Zombie King** and a **Skeleton King** arrive one after the other, and every boss you beat
+  makes the ordinary monsters a little tougher (up to **Harder x3**). After the Skeleton King,
+  the kings come back again from the Slime King — ever harder. There is no final screen: the
+  game simply continues, one crown at a time.
 - If you run out of hearts, the whole adventure starts again from level 1 with the wooden
   sword and full hearts. This is on purpose: it is how the old arcade games worked, it keeps
   the rule easy to understand, and it was the design the game was asked for.

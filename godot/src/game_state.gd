@@ -8,10 +8,32 @@ const Rules := preload("res://src/rules.gd")
 signal hearts_changed(hp: int)
 signal sword_changed(sword_id: String)
 signal player_died
+signal boss_changed(boss_id: String, tier: int)
 
 var hearts: int = Rules.MAX_HP
 var sword: String = "wood"
 var level: int = 1
+## T6b gauntlet (MC 11740): boss kills so far; the difficulty tier and the
+## next arena boss are pure functions of this one counter (rules.gd law).
+var boss_kills: int = 0
+
+
+func difficulty_tier() -> int:
+	return Rules.tier_for_boss_kills(boss_kills)
+
+
+## Which boss the arena holds right now (lord first, then the king ladder).
+func current_boss() -> String:
+	return Rules.next_boss_after(boss_kills)
+
+
+func on_boss_kill() -> void:
+	boss_kills += 1
+
+
+## Which boss is on screen right now ("" = none); drives the HUD boss label.
+func set_boss_on_screen(boss_id: String) -> void:
+	boss_changed.emit(boss_id, difficulty_tier())
 
 
 ## Full reset from initial_state()/on_death() — used at title start and after GAME OVER.
@@ -20,8 +42,10 @@ func start_new_game() -> void:
 	level = int(s["level"])
 	sword = String(s["sword"])
 	hearts = int(s["hearts"])
+	boss_kills = int(s["boss_kills"])  # tier resets to 0 on death (T6b law)
 	hearts_changed.emit(hearts)
 	sword_changed.emit(sword)
+	set_boss_on_screen("")
 
 
 func damage_player(amount: int) -> void:

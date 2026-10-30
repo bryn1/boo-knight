@@ -1,7 +1,10 @@
 extends Node2D
-## Game root (main scene): title screen -> levels 1..3 -> victory, with a
-## GAME OVER screen that restarts the WHOLE game (level 1, wooden sword,
-## 30 hearts) on SPACE. Levels are hand-built data, assembled by src/level.gd.
+## Game root (main scene): title screen -> levels 1..3 -> BOSS-KING GAUNTLET.
+## Killing the Vampire Lord no longer ends the game (T6b, MC 11740): every
+## boss kill raises the difficulty tier (capped) and the next king of the
+## ladder arrives in the arena — the player restarts the arena level (fresh
+## SPAWN_GRACE) each time. GAME OVER still restarts the WHOLE game (level 1,
+## wooden sword, 30 hearts, tier 0) on SPACE.
 
 const Art := preload("res://src/art.gd")
 const Rules := preload("res://src/rules.gd")
@@ -11,7 +14,8 @@ const HudScript := preload("res://src/hud.gd")
 const STATE_TITLE := 0
 const STATE_PLAYING := 1
 const STATE_GAME_OVER := 2
-const STATE_VICTORY := 3
+## Level index (1-based) whose "vampire_lord" mob slot becomes the ladder boss.
+const ARENA_LEVEL := 3
 
 ## Hand-built side-scroller maps. Ground row 19 (y=304); segments are
 ## [x0, x1, top_row] tile ranges; entities are [type, tile_x, row].
@@ -52,6 +56,8 @@ const LEVELS: Array[Dictionary] = [
 			["bread", 132], ["apple", 148]],
 		"mobs": [["skeleton", 25, 19], ["ghost", 40, 16], ["vampire", 62, 19],
 			["skeleton", 85, 19], ["ghost", 106, 16], ["vampire", 125, 19],
+			# BOSS SLOT (T6b): game.gd replaces this kind with the ladder's next
+			# boss on every arena load — lord first, then the kings.
 			["vampire_lord", 176, 19]],
 		"chest_tile": 150,
 	},
@@ -86,9 +92,6 @@ func _process(_delta: float) -> void:
 		STATE_GAME_OVER:
 			if pressed:
 				_start_game()  # SPACE -> whole game again from level 1
-		STATE_VICTORY:
-			if pressed:
-				_show_title()
 
 
 func _show_title() -> void:
@@ -123,6 +126,16 @@ func _load_level(n: int) -> void:
 		level_node = null
 	var data: Dictionary = LEVELS[n - 1].duplicate(true)
 	data["index"] = n
+	data["tier"] = GameState.difficulty_tier()  # normal mobs scale, bosses don't
+	var boss_id := ""
+	if n == ARENA_LEVEL:
+		# The lord's mob slot holds whoever the ladder says is next (T6b law 6:
+		# the game continues after every boss death; the next one arrives here).
+		boss_id = GameState.current_boss()
+		for m in data["mobs"]:
+			if m[0] == "vampire_lord":
+				m[0] = boss_id
+	GameState.set_boss_on_screen(boss_id)
 	level_node = Node2D.new()
 	level_node.set_script(LevelScript)
 	level_node.setup(data)
@@ -139,9 +152,11 @@ func _on_level_done() -> void:
 
 
 func _on_boss_died() -> void:
-	state = STATE_VICTORY
-	level_node.visible = false
-	_show_overlay("VICTORY!", "The Vampire Lord is gone. The night is cute again.\npress SPACE")
+	# T6b law: no victory screen. Each boss kill raises the tier (capped at 3
+	# in rules.gd) and the next king of the ladder takes the lord's place; the
+	# arena reload spawns a fresh player, which carries the 3.0 s SPAWN_GRACE.
+	GameState.on_boss_kill()
+	_load_level(ARENA_LEVEL)
 
 
 func _on_player_died() -> void:
