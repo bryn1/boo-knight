@@ -44,8 +44,10 @@ recorded in [`LEDGER.md`](LEDGER.md), not from a plan.
 - **The tab is CPU-heavy while playing.** The render loop keeps running the whole time the
   game is open (≈45 rendered frames per second measured on the served build); on older laptops
   and tablets expect the fan to spin up.
-- Also: keyboard only (arrows + Space + X; no touch controls), and there is no save or level
-  select — the restart-from-level-1 rule above is the whole progress model.
+- **Touch devices get on-screen buttons** (walk ◀ ▶, sword ⚔, jump ▲; multi-touch works).
+  In portrait the view is cropped — play in **landscape**.
+- There is no save or level select — the restart-from-level-1 rule above is the whole
+  progress model.
 
 ## PROMISED-BUT-NOT-SHIPPED
 

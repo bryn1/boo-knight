@@ -32,7 +32,9 @@ show a "your connection is not private" warning the first time: choose *Advanced
 So to run the built game for your kid, serve it and open it as `localhost` (see *Building it
 yourself* below).
 
-A keyboard is needed — the arrow keys and two letter keys; there are no touch controls.
+**On a phone or tablet** the game shows big on-screen buttons: walk left/right on the
+left, sword and jump on the right — multi-touch works (hold walk and jump together).
+Play in **landscape**: in portrait the view is cropped.
 
 ## Controls
 
@@ -42,7 +44,8 @@ A keyboard is needed — the arrow keys and two letter keys; there are no touch 
 | jump | **Space** (or ↑ / W) |
 | swing the sword | **X** (or J) |
 
-On the title screen, press **Space** to begin.
+On the title screen, press **Space** (or tap any button) to begin.
+On a touch device: ◀ ▶ walk, ⚔ sword, ▲ jump.
 
 ## The rules, in plain words
 
