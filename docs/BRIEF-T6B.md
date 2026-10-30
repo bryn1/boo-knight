@@ -1,0 +1,22 @@
+T6b (MC CARD) — BOSS-KING GAUNTLET + easier Vampire Lord. Owner asks 2026-10-30, verbatim: "The vampire king was a bit to hard, make it have less hp and do less damage. When vampire king is dead, increase difgiculty and new boss. Each bosskill uncreasws difficulty. Monster kung, ghost king, zombie kikng, skeletonking". This is an OWNER AMENDMENT to the rules law: rules.gd changes ARE in scope on this card ONLY, and every number below is the closer-set law — implement it exactly, do not improvise values.
+
+Repo /home/claudecode/Games/boo-knight (Godot 4.7.2; gates run from repo root: $G = /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64; sim: $G --headless --path godot -s res://tests/sim.gd; plant-bad variant -- --plant-bad; smoke: $G --headless --path godot res://tests/smoke.tscn; BOOKNIGHT_START_TILE=160 smoke variant; export --headless --path godot --export-release "Web" build/web/index.html). Art is ALREADY committed (4a6b6c9): assets/sprites/{slime_king,ghost_king,zombie_king,skeleton_king}.png each + _a/_b anim frames — read docs/SPRITES.md §Boss-king frames; ANIMS manifest in godot/src/art.gd gets the king entries (walk/move cycle names follow the existing *_walk_a/_b convention; ghost kings float — reuse ghost_move semantics).
+
+THE LAW (rules.gd single source of truth; add a KING_LADDER + DIFFICULTY section):
+1. LORD AMENDMENT: vampire_lord hp 10 -> 6, contact 6 -> 3. Update every sim/smoke assertion that pins the old values (the sim is the law's mirror).
+2. LADDER after the lord, in order: slime_king, ghost_king, zombie_king, skeleton_king, then CYCLE back to slime_king (kings return, ever harder).
+3. KING STATS: slime_king hp 8 contact 3, ghost_king hp 8 contact 3, zombie_king hp 9 contact 4, skeleton_king hp 10 contact 4. Kings move like their mob kind (squash-bounce / float / shamble / march — the a/b frames exist) and drop to the existing defeat flow.
+4. DIFFICULTY TIER law: starts 0. Each BOSS KILL (lord OR king) raises tier +1. CAPPED at 3 (owner's kid is 6 — never runaway). Per tier above base: normal mobs hp +1 (hard cap 10 — the original law stays) and contact +1 (hard cap 6). Kings' own stats do NOT scale further (the cycle IS the escalation). Tier resets to 0 on player death (death -> start from the beginning law is untouched).
+5. HUD: show current boss display name when the ladder boss is alive (e.g. "Slime King") and, when tier > 0, a small "Harder x<tier>" marker. Keep 30-hearts + sword HUD untouched.
+6. When the lord dies the game CONTINUES (no victory screen) — the next king arrives; when a king dies the next arrives; on each arrival reset player to the level start area with a fresh 3.0s SPAWN_GRACE (this stays exactly as the existing spawn law).
+
+ARCHITECTURE NOTES (do not restructure): game.gd spawns the boss; mob.gd types registry already maps kind -> stats/anim; extend, don't rewrite. Keep every .gd under 400 lines (one concern per file). No new autoloads unless unavoidable.
+
+GATES + TESTS (business-correctness: assert the law, including its caps and resets):
+- sim.gd: assert lord 6/3; each king's hp/contact; tier increments per boss kill in ladder order and STOPS at 3; mob hp scales +1/tier capped at 10; contact capped at 6; king cycle order slime->ghost->zombie->skeleton->slime; tier reset on death; player damage math against kings with the 4 swords (wood 1 .. diamond 5).
+- smoke.gd: new lines "KINGS ladder=4 first=slime_king" and "TIER capped=3 reset-on-death ok" style assertions (print the values).
+- MUTATION PROOF (mandatory, same bar as T4b): plant at least ONE bad law value (e.g. lord hp back to 10) -> sim must exit 1; revert, sim exit 0. Attach both outputs.
+- All gates on the committed tree, no pipes, redirects + echo $?: import 0, sim 0, sim --plant-bad 1, smoke 0, BOOKNIGHT_START_TILE=160 smoke 0, web export 0. Then publish build/web artifacts md5-verified (systemd service untouched — the live site just picks them up).
+- One commit, author git -c user.name="code (CARD)" -c user.email="code@agent-town.local" commit. LEDGER.md: append the owner-amendment row quoting his words.
+
+Evidence .audits/T6b-GAUNTLET-RESULT.md: the law table as implemented (file+section), gate exit table, mutation red/green outputs, md5 table, commit SHA, ending "# VERDICT: PASS". DoD: that file ends VERDICT: PASS; one commit; sim/smoke/export exits as listed; the four king sprites reachable via frames_for() with >1 frame each (asserted in smoke). Browser acceptance is the orchestrator's. Return path + one line. Never spawn anything.
