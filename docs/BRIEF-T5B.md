@@ -9,5 +9,5 @@ T5b (MC 11729 (pre-claim id; verify)) — v1.0.0 GA release of Boo Knight to Git
 Deliverable evidence: .audits/T5-RELEASE-EVIDENCE.md with every command measured (no pipes for exit codes), the Pages acceptance outputs (MIME header line, 200 line), release URL, ending VERIFY_EXIT=0.
 DoD: git ls-remote origin refs/tags/v1.0.0 returns the tag sha AND gh release view v1.0.0 --repo bryn1/boo-knight exits 0 AND curl -sI https://bryn1.github.io/boo-knight/index.wasm shows HTTP/2 200 with a wasm content-type AND a browser screenshot of https://bryn1.github.io/boo-knight/ shows the Boo Knight title screen with zero console errors.
 PROBE: git -C /home/claudecode/Games/boo-knight ls-remote origin refs/tags/v1.0.0 => refs/tags/v1[.]0[.]0$
-PROBE: git -C /home/claudecode/Games/boo-knight tag --list v1.0.0 => ^v1[.]0[.]0$
+PROBE: git -C /home/claudecode/Games/boo-knight rev-parse --verify v1.0.0 => ^[0-9a-f]{40}$
 DoD: the tag v1.0.0 exists on origin AND gh release v1.0.0 exists AND https://bryn1.github.io/boo-knight/ renders the title screen with zero console errors (browser-verified at close).
