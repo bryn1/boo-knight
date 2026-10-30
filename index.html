@@ -1,0 +1,403 @@
+<!--
+	mobile_shell.html — custom HTML shell for the Web export
+	(export_presets.cfg [preset.0.options] html/custom_html_shell).
+
+	PROVENANCE: derived from the STOCK Godot 4.7.2.stable
+	web_nothreads_release template godot.html, extracted from
+	~/.local/share/godot/export_templates/4.7.2.stable/web_nothreads_release.zip
+	(the template this preset uses: variant/thread_support=false). All eight
+	export-time substitution tokens of that template are preserved exactly
+	once each below (the eight name-CONFIG-style dollar tokens; 4.7.2 has no
+	older-marker-format substitution points — grep proves 0 on the stock
+	file too).
+
+	LENGTH REASON (file hygiene): this must stay ONE file — Godot's
+	custom_html_shell preset option accepts exactly one HTML path, and the
+	file must also contain the complete stock boot shell, so the stock shell
+	and the MOBILE TOUCH LAYER block (MC 11730) cannot be split.
+
+	MOBILE TOUCH LAYER (MC 11730): three clearly delimited BEGIN/END blocks
+	(style in head, buttons in body, JS at the end of body). Buttons render
+	only when body carries the .touch class (set at load iff matchMedia
+	pointer:coarse); on desktop the output is otherwise the stock shell,
+	pixel-identical.
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<!-- MOBILE TOUCH LAYER (MC 11730): viewport adjusted from stock (added
+			maximum-scale=1, viewport-fit=cover for safe-area insets). -->
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+		<title>Boo Knight</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-splash.show-image--false {
+	display: none;
+}
+
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+}
+
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+		<!-- BEGIN MOBILE TOUCH LAYER (MC 11730) CSS: buttons are display:none unless
+			body has .touch (JS sets it only on coarse pointers) — desktop is
+			pixel-identical to the stock shell. -->
+		<style id="mobile-touch-style">
+body.touch {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.touchbtn {
+	display: none;
+	position: fixed;
+	z-index: 10;
+	touch-action: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	width: 20vw;
+	height: 15vh;
+	min-height: 15vh;
+	justify-content: center;
+	align-items: center;
+	border-radius: 2.5vh;
+	border: 2px solid rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.12);
+	color: rgba(255, 255, 255, 0.9);
+	font: bold 6vh/1 sans-serif;
+	padding: 0;
+}
+
+body.touch .touchbtn {
+	display: flex;
+}
+
+.touchbtn.pressed { background: rgba(255, 255, 255, 0.38); }
+
+/* safe-area-inset padding keeps buttons clear of notches/home bars */
+#tb-left {
+	left: calc(2vw + env(safe-area-inset-left, 0px));
+	bottom: calc(2vh + env(safe-area-inset-bottom, 0px));
+}
+#tb-right {
+	left: calc(24vw + env(safe-area-inset-left, 0px));
+	bottom: calc(2vh + env(safe-area-inset-bottom, 0px));
+}
+#tb-jump {
+	right: calc(2vw + env(safe-area-inset-right, 0px));
+	bottom: calc(2vh + env(safe-area-inset-bottom, 0px));
+}
+#tb-sword {
+	right: calc(24vw + env(safe-area-inset-right, 0px));
+	bottom: calc(2vh + env(safe-area-inset-bottom, 0px));
+}
+		</style>
+		<!-- END MOBILE TOUCH LAYER — CSS -->
+	</head>
+	<body>
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<!-- BEGIN MOBILE TOUCH LAYER (MC 11730) BUTTONS: four >=15vh-tall rounded
+			translucent buttons, hidden unless body.touch; class 'touchbtn' is the
+			marker token; aria-labels for accessibility. -->
+		<button type="button" id="tb-left" class="touchbtn" aria-label="Move left">&#9664;</button>
+		<button type="button" id="tb-right" class="touchbtn" aria-label="Move right">&#9654;</button>
+		<button type="button" id="tb-jump" class="touchbtn" aria-label="Jump">&#9650;</button>
+		<button type="button" id="tb-sword" class="touchbtn" aria-label="Sword attack">&#9876;</button>
+		<!-- END MOBILE TOUCH LAYER — BUTTONS -->
+
+		<div id="status">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script src="index.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4065840,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				// Reload if there was no error.
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
+}());
+		</script>
+		<!-- BEGIN MOBILE TOUCH LAYER (MC 11730) JS. Each button maps to one key
+			(project.godot [input]: arrows, Space, physical X). Press/release are
+			tracked per pointerId so several fingers work at once (left+jump);
+			per-button pointerup/pointercancel/lostpointercapture PLUS a window
+			safety net and blur/visibilitychange releaseAll = no stuck-key path.
+			{code,key} events dispatch to the hidden .ime element (Godot 4 web
+			binds keydown/keyup there; window-only dispatch is ignored — proven
+			fleet fact) AND to window AND document, bubbles+cancelable.
+			preventDefault on pointer events stops browser zoom/selection. -->
+		<script>
+(function () {
+	'use strict';
+	if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+		document.body.classList.add('touch');
+	}
+	const KEYS = {
+		'tb-left': { code: 'ArrowLeft', key: 'ArrowLeft' },
+		'tb-right': { code: 'ArrowRight', key: 'ArrowRight' },
+		'tb-jump': { code: 'Space', key: ' ' },
+		'tb-sword': { code: 'KeyX', key: 'x' },
+	};
+	const held = new Map(); // pointerId -> { el, code, key }
+
+	function sendKey(type, code, key) {
+		const ev = new KeyboardEvent(type, {
+			code: code,
+			key: key,
+			bubbles: true,
+			cancelable: true,
+		});
+		// Godot 4 web (godot.js GodotIME) binds keydown/keyup on the hidden
+		// .ime div; dispatch there first, then window and document.
+		const ime = document.querySelector('.ime');
+		if (ime) {
+			ime.dispatchEvent(ev);
+		}
+		window.dispatchEvent(ev);
+		document.dispatchEvent(ev);
+	}
+
+	function release(e) {
+		const s = held.get(e.pointerId);
+		if (!s) {
+			return;
+		}
+		held.delete(e.pointerId);
+		s.el.classList.remove('pressed');
+		sendKey('keyup', s.code, s.key);
+	}
+
+	function releaseAll() {
+		held.forEach(function (s) {
+			s.el.classList.remove('pressed');
+			sendKey('keyup', s.code, s.key);
+		});
+		held.clear();
+	}
+
+	Object.keys(KEYS).forEach(function (id) {
+		const el = document.getElementById(id);
+		if (!el) {
+			return;
+		}
+		el.addEventListener('pointerdown', function (e) {
+			e.preventDefault();
+			release(e); // defensive: never leave an older mapping for this pointer
+			const k = KEYS[id];
+			held.set(e.pointerId, { el: el, code: k.code, key: k.key });
+			el.classList.add('pressed');
+			sendKey('keydown', k.code, k.key);
+		});
+		el.addEventListener('pointerup', release);
+		el.addEventListener('pointercancel', release);
+		el.addEventListener('lostpointercapture', release);
+		el.addEventListener('contextmenu', function (e) {
+			e.preventDefault();
+		});
+	});
+	// Safety net: a pointer released/cancelled anywhere still frees its key.
+	window.addEventListener('pointerup', release);
+	window.addEventListener('pointercancel', release);
+	// No stuck-key paths when the page loses attention.
+	window.addEventListener('blur', releaseAll);
+	document.addEventListener('visibilitychange', function () {
+		if (document.hidden) {
+			releaseAll();
+		}
+	});
+}());
+		</script>
+		<!-- END MOBILE TOUCH LAYER — JS -->
+	</body>
+</html>
+
