@@ -82,3 +82,14 @@ element animates) — all PASS, no rejects.
 
 Contact sheet: `.audits/swords-contact.png` (15 frames). Base frame = HUD icon; _a/_b drive
 the held-sword idle cycle in-game.
+
+## Hero redrawn EMPTY-HANDED (MC 11809, 2026-10-31)
+
+Owner bug photo (verbatim in docs/BRIEF-T8-ART.md): the painted sword in the hero art +
+the game's held-sword overlay = "a sword attached to his head". Fix: hero.png +
+hero_walk_a/b + hero_attack_a/b replaced with empty-fist versions (edit-mode renders
+locked to the original masters); attack frames are now a FORWARD LUNGE (owner: "sword
+pointing straight forward in a sweeping motion"). The game overlay (player.gd) is now
+the ONE visible sword. Old masters (hero-1, hero-walk-*, hero-attack-*) remain in the
+library as history. Contact sheet: .audits/hero-nosword-contact.png — QA: palette/pose
+locked, zero sword fragments, PASS, no rejects.
