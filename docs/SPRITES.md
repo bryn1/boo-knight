@@ -64,3 +64,21 @@ animation pair, edit-mode-locked to the matching mob's library master:
 | `skeleton_king.png` | `_a/_b` royal march | skeleton-king-1, skeleton-king-a-1, skeleton-king-b-1 | red ermine cape; crown between skull plates |
 
 Contact sheets: `.audits/kings-contact.png` (all 12), `.audits/ghost-king-recheck.png` (reject-fix trio). QA gates: pair-color drift, crown presence, no extra props, no gore — all PASS.
+
+## Enchanted diamond swords (MC 11781, 2026-10-31)
+
+Owner ask: five enchanted diamond swords (+1..+5) with unique animated art (ice, flames,
+lava, wind — fifth element STORM chosen by closer, disclosed). Edit-mode renders locked to
+the `sword_diamond-1` master; trio-consistency QA gate (silhouette/handle identical, only the
+element animates) — all PASS, no rejects.
+
+| sprite | anim | masters (library 2026/10/boo-knight) | notes |
+|---|---|---|---|
+| `sword_diamond_ice.png` | `_a/_b` snowflake twinkle, aura pulse | sword_ice-1, sword_ice_a-1, sword_ice_b-1 | frost rime constant, sparkles move |
+| `sword_diamond_flame.png` | `_a/_b` flame flicker + embers | sword_flame-1, sword_flame_a-1, sword_flame_b-1 | aqua blade core constant |
+| `sword_diamond_lava.png` | `_a/_b` molten crack pulse bright/dim | sword_lava-1, sword_lava_a-1, sword_lava_b-1 | dark rock blade, kid-friendly (no splatter) |
+| `sword_diamond_wind.png` | `_a/_b` swirl half-turn phase | sword_wind-1, sword_wind_a-1, sword_wind_b-1 | teal wisps orbit, blade static |
+| `sword_diamond_storm.png` | `_a/_b` lightning rebranch | sword_storm-1, sword_storm_a-1, sword_storm_b-1 | violet arcs; sparks detach in _b |
+
+Contact sheet: `.audits/swords-contact.png` (15 frames). Base frame = HUD icon; _a/_b drive
+the held-sword idle cycle in-game.
