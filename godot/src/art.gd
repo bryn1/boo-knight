@@ -26,6 +26,12 @@ const VIS := {
 	"sword_stone": {"file": "sword_stone.png", "size": Vector2(24, 24), "color": Color(0.6, 0.6, 0.6)},
 	"sword_iron": {"file": "sword_iron.png", "size": Vector2(24, 24), "color": Color(0.8, 0.85, 0.9)},
 	"sword_diamond": {"file": "sword_diamond.png", "size": Vector2(24, 24), "color": Color(0.4, 0.9, 0.9)},
+	# T7b enchanted diamond swords (MC 11782): base frame = HUD icon; _a/_b animate the held sword.
+	"sword_diamond_ice": {"file": "sword_diamond_ice.png", "size": Vector2(24, 24), "color": Color(0.55, 0.85, 1.0)},
+	"sword_diamond_flame": {"file": "sword_diamond_flame.png", "size": Vector2(24, 24), "color": Color(1.0, 0.5, 0.15)},
+	"sword_diamond_lava": {"file": "sword_diamond_lava.png", "size": Vector2(24, 24), "color": Color(0.9, 0.28, 0.08)},
+	"sword_diamond_wind": {"file": "sword_diamond_wind.png", "size": Vector2(24, 24), "color": Color(0.6, 0.95, 0.85)},
+	"sword_diamond_storm": {"file": "sword_diamond_storm.png", "size": Vector2(24, 24), "color": Color(0.65, 0.45, 0.95)},
 	"heart": {"file": "heart.png", "size": Vector2(12, 12), "color": Color(0.9, 0.15, 0.25)},
 	"heart_half": {"file": "heart_half.png", "size": Vector2(12, 12), "color": Color(0.55, 0.1, 0.18)},
 	"food_apple": {"file": "food_apple.png", "size": Vector2(22, 22), "color": Color(0.85, 0.1, 0.1)},
@@ -55,10 +61,23 @@ const ANIMS := {
 	"ghost_king_move": {"base": "ghost_king", "frames": ["ghost_king_a.png", "ghost_king_b.png"]},
 	"zombie_king_walk": {"base": "zombie_king", "frames": ["zombie_king_a.png", "zombie_king_b.png"]},
 	"skeleton_king_walk": {"base": "skeleton_king", "frames": ["skeleton_king_a.png", "skeleton_king_b.png"]},
+	# T7b enchanted swords (MC 11782): held-sword idle cycles (player.gd, ~8 fps),
+	# one element animation per sword — ice, flame, lava, wind, storm.
+	"sword_diamond_ice": {"base": "sword_diamond_ice", "frames": ["sword_diamond_ice_a.png", "sword_diamond_ice_b.png"]},
+	"sword_diamond_flame": {"base": "sword_diamond_flame", "frames": ["sword_diamond_flame_a.png", "sword_diamond_flame_b.png"]},
+	"sword_diamond_lava": {"base": "sword_diamond_lava", "frames": ["sword_diamond_lava_a.png", "sword_diamond_lava_b.png"]},
+	"sword_diamond_wind": {"base": "sword_diamond_wind", "frames": ["sword_diamond_wind_a.png", "sword_diamond_wind_b.png"]},
+	"sword_diamond_storm": {"base": "sword_diamond_storm", "frames": ["sword_diamond_storm_a.png", "sword_diamond_storm_b.png"]},
 }
 
 static var _cache := {}
 static var _frames_cache := {}
+
+
+## Whether an ANIMS cycle exists for a VIS key (T7b: enchanted sword icons
+## animate while held; plain wood/stone/iron/diamond keys stay static).
+static func has_anim(key: String) -> bool:
+	return ANIMS.has(key)
 
 
 static func display_size(key: String) -> Vector2:

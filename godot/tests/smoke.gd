@@ -15,6 +15,7 @@ const Mob := preload("res://src/mob.gd")
 const Game := preload("res://src/game.gd")
 const Level := preload("res://src/level.gd")
 const DebugStart := preload("res://src/debug_start.gd")
+const Gauntlet := preload("res://src/gauntlet.gd")
 
 func _ready() -> void:
 	var game_scene: Node = load("res://scenes/main.tscn").instantiate()
@@ -90,7 +91,7 @@ func _ready() -> void:
 		print("SMOKE FAIL: facing left_flip=%s (want true) right_flip=%s (want false)" % [left_flip, right_flip])
 		get_tree().quit(1)
 		return
-	# --- T6b BOSS-KING GAUNTLET law (MC 11740) ---
+	# --- T6b BOSS-KING ladder law (MC 11740, kept) ---
 	# 1) Ladder shape + cycle: 4 kings, slime first, wraps after skeleton.
 	if Rules.KING_LADDER.size() != 4 or String(Rules.KING_LADDER[0]) != "slime_king" \
 			or Rules.next_boss_after(4) != "skeleton_king" or Rules.next_boss_after(5) != "slime_king":
@@ -100,16 +101,33 @@ func _ready() -> void:
 		return
 	print("KINGS ladder=%d first=%s cycle=slime..skeleton->slime ok" % [
 		Rules.KING_LADDER.size(), Rules.KING_LADDER[0]])
-	# 2) Tier law: +1 per boss kill, capped at 3, reset to 0 on death.
-	if Rules.tier_for_boss_kills(1) != 1 or Rules.tier_for_boss_kills(4) != 3 \
-			or int(Rules.on_death({"boss_kills": 4})["boss_kills"]) != 0:
-		print("SMOKE FAIL: tier law broken (t1=%d t4=%d reset=%d)" % [
-			Rules.tier_for_boss_kills(1), Rules.tier_for_boss_kills(4),
-			int(Rules.on_death({"boss_kills": 4})["boss_kills"])])
+	# --- T7b GAUNTLET LEVELS + x1.25 MULTIPLIER + ENCHANTED SWORDS (MC 11782) ---
+	# 2) Sword table: five enchanted diamond swords, storm tops the chain at 10.
+	if Rules.SWORD_ORDER.size() != 9 or Rules.sword_damage("diamond_storm") != 10 \
+			or Rules.better_sword("diamond", "diamond_ice") != "diamond_ice" \
+			or Rules.better_sword("diamond_storm", "diamond_lava") != "diamond_storm":
+		print("SMOKE FAIL: enchanted sword chain broken (order=%d storm=%d)" % [
+			Rules.SWORD_ORDER.size(), Rules.sword_damage("diamond_storm")])
 		get_tree().quit(1)
 		return
-	print("TIER capped=%d reset-on-death ok" % Rules.tier_for_boss_kills(4))
-	# 3) Every king has its 2-frame move cycle (real art runs only, like hero_walk).
+	print("SWORDS enchanted=5 storm=10")
+	# 3) Multiplier law (uncapped, owner amendment 2026-10-31): slime hp 2 at
+	# depth 6 -> roundi(2*1.25^6 = 7.629) = 8, far past any old band.
+	var d6_hp := Rules.mob_hp("slime", 6)
+	if d6_hp != 8 or Rules.mob_hp("skeleton", 6) != 23 or Rules.mob_hp("slime", 0) != 2:
+		print("SMOKE FAIL: multiplier law broken (slime d6=%d want 8, skeleton d6=%d want 23)" % [
+			d6_hp, Rules.mob_hp("skeleton", 6)])
+		get_tree().quit(1)
+		return
+	print("MULT depth6 hp(slime)= %d uncapped ok" % d6_hp)
+	# 4) Generator determinism (same depth twice, byte-identical) + fixed rotation.
+	var g3 := Gauntlet.generate(3)
+	if str(g3) != str(Gauntlet.generate(3)) or Array(g3["mobs"]).size() != 10:
+		print("SMOKE FAIL: gauntlet generator not deterministic (mobs=%d)" % Array(g3["mobs"]).size())
+		get_tree().quit(1)
+		return
+	print("GAUNTLET gen depth=3 mobs=%d det=ok" % Array(g3["mobs"]).size())
+	# 5) Every king has its 2-frame move cycle (real art runs only, like hero_walk).
 	for king in Rules.KING_LADDER:
 		var kf := Art.frames_for(String(Mob.MOVE_ANIM[king]))
 		print("KING_ANIM %s=%d frames" % [king, kf.size()])
@@ -117,8 +135,17 @@ func _ready() -> void:
 			print("SMOKE FAIL: %s resolved to %d frame(s) while art is REAL" % [king, kf.size()])
 			get_tree().quit(1)
 			return
-	# 4) Runtime law: killing the lord CONTINUES the game — tier goes 0->1 and
-	# the arena reloads with slime_king in the lord's place (no victory state).
+	# 6) Enchanted swords animate while held (T7b law 4): each _a/_b pair resolves.
+	for el in ["ice", "flame", "lava", "wind", "storm"]:
+		var sf := Art.frames_for("sword_diamond_" + el)
+		print("SWORD_ANIM %s=%d frames" % [el, sf.size()])
+		if art_real and sf.size() < 2:
+			print("SMOKE FAIL: sword_diamond_%s resolved to %d frame(s) while art is REAL" % [el, sf.size()])
+			get_tree().quit(1)
+			return
+	# 7) Runtime law: killing the lord CONTINUES the game — gauntlet DEPTH 1
+	# opens first (T7b: upgraded level BEFORE the next king), and clearing its
+	# exit door delivers slime_king in the arena (no victory state).
 	var lord: Node = null
 	for c in game_scene.level_node.get_children():
 		if c.get("mob_type") == "vampire_lord":
@@ -130,15 +157,25 @@ func _ready() -> void:
 	lord.take_damage(999, lord.global_position.x)
 	for i in 3:
 		await get_tree().process_frame
+	if not game_scene.on_gauntlet or int(game_scene.level_node.data.get("depth", 0)) != 1 \
+			or GameState.gauntlet_depth() != 1 or game_scene.state != Game.STATE_PLAYING:
+		print("SMOKE FAIL: boss-kill did not open gauntlet depth 1 (on_gauntlet=%s depth=%d state=%d)" % [
+			game_scene.on_gauntlet, GameState.gauntlet_depth(), game_scene.state])
+		get_tree().quit(1)
+		return
+	game_scene.level_node.level_done.emit()  # simulated clear: hero reached the exit door
+	for i in 3:
+		await get_tree().process_frame
 	var king_present := false
 	for c in game_scene.level_node.get_children():
 		if c.get("mob_type") == "slime_king":
 			king_present = true
-	if GameState.difficulty_tier() != 1 or not king_present or game_scene.state != Game.STATE_PLAYING:
-		print("SMOKE FAIL: gauntlet continue broken (tier=%d slime_king=%s state=%d)" % [
-			GameState.difficulty_tier(), king_present, game_scene.state])
+	if game_scene.on_gauntlet or not king_present or game_scene.state != Game.STATE_PLAYING \
+			or game_scene.level_node.data.has("depth"):
+		print("SMOKE FAIL: gauntlet clear broken (on_gauntlet=%s slime_king=%s state=%d depth-keyed=%s)" % [
+			game_scene.on_gauntlet, king_present, game_scene.state, game_scene.level_node.data.has("depth")])
 		get_tree().quit(1)
 		return
-	print("GAUNTLET lord-kill -> tier=1 next=slime_king playing ok")
+	print("GAUNTLET lord-kill -> depth=1 gauntlet opened -> cleared -> slime_king playing ok")
 	print("SMOKE OK")
 	get_tree().quit(0)

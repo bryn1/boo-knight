@@ -8,18 +8,20 @@ const Rules := preload("res://src/rules.gd")
 signal hearts_changed(hp: int)
 signal sword_changed(sword_id: String)
 signal player_died
-signal boss_changed(boss_id: String, tier: int)
+signal boss_changed(boss_id: String, depth: int)
 
 var hearts: int = Rules.MAX_HP
 var sword: String = "wood"
 var level: int = 1
-## T6b gauntlet (MC 11740): boss kills so far; the difficulty tier and the
-## next arena boss are pure functions of this one counter (rules.gd law).
+## T7b gauntlet (MC 11782): boss kills so far; the gauntlet depth/multiplier and
+## the next arena boss are pure functions of this one counter (rules.gd law).
 var boss_kills: int = 0
 
 
-func difficulty_tier() -> int:
-	return Rules.tier_for_boss_kills(boss_kills)
+## Gauntlet depth: 0 = the unscaled handcrafted world; 1.. = one gauntlet level
+## earned per boss kill (mult = 1.25^depth, rules.gd law).
+func gauntlet_depth() -> int:
+	return Rules.depth_for_boss_kills(boss_kills)
 
 
 ## Which boss the arena holds right now (lord first, then the king ladder).
@@ -31,9 +33,10 @@ func on_boss_kill() -> void:
 	boss_kills += 1
 
 
-## Which boss is on screen right now ("" = none); drives the HUD boss label.
+## Which boss is on screen right now ("" = none); drives the HUD boss label
+## and the "Harder x<mult>" depth marker.
 func set_boss_on_screen(boss_id: String) -> void:
-	boss_changed.emit(boss_id, difficulty_tier())
+	boss_changed.emit(boss_id, gauntlet_depth())
 
 
 ## Full reset from initial_state()/on_death() — used at title start and after GAME OVER.
@@ -42,7 +45,7 @@ func start_new_game() -> void:
 	level = int(s["level"])
 	sword = String(s["sword"])
 	hearts = int(s["hearts"])
-	boss_kills = int(s["boss_kills"])  # tier resets to 0 on death (T6b law)
+	boss_kills = int(s["boss_kills"])  # depth + multiplier reset to 0 on death (T7b law)
 	hearts_changed.emit(hearts)
 	sword_changed.emit(sword)
 	set_boss_on_screen("")
@@ -71,9 +74,27 @@ func eat(food: String) -> void:
 	hearts_changed.emit(hearts)
 
 
-## Player touched a chest in `chest_level`; returns true when the sword upgraded.
+## Player touched a chest in handcrafted `chest_level`; returns true when the sword upgraded.
 func touch_chest(chest_level: int) -> bool:
 	var next := Rules.better_sword(sword, Rules.chest_sword_for_level(chest_level))
+	if next == sword:
+		return false
+	sword = next
+	sword_changed.emit(sword)
+	return true
+
+
+## Player touched a chest in a gauntlet level of `depth` (T7b law 3): depths
+## 1..5 hold one enchanted diamond sword each (still gated by better_sword —
+## never a downgrade), deeper chests hold bread. True = something was taken.
+func touch_gauntlet_chest(depth: int) -> bool:
+	var loot := Rules.gauntlet_chest(depth)
+	if loot == "bread":
+		if hearts >= Rules.MAX_HP:
+			return false
+		eat("bread")
+		return true
+	var next := Rules.better_sword(sword, loot)
 	if next == sword:
 		return false
 	sword = next

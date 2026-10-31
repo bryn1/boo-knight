@@ -1,15 +1,16 @@
 extends CanvasLayer
 ## HUD: 15-heart grid (2 HP per heart, heart.png/heart_half.png with drawn
 ## fallback), current sword icon + name, a short toast when the sword changes,
-## and (T6b, MC 11740) the live boss name while one is on screen plus a small
-## "Harder x<tier>" marker once the difficulty tier is above 0. The 30-hearts
-## + sword HUD itself is untouched law.
+## the live boss name while one is on screen, and (T7b, MC 11782) the
+## multiplier marker "Harder x<mult>" (one decimal) while the gauntlet depth
+## is above 0 — replacing the old integer difficulty marker. The 30-hearts + sword
+## HUD itself is untouched law; sword icons stay static base frames.
 
 const Art := preload("res://src/art.gd")
 const Rules := preload("res://src/rules.gd")
 
 const BOSS_NAME_COLOR := Color(1.0, 0.85, 0.4, 1.0)
-const TIER_COLOR := Color(1.0, 0.55, 0.45, 1.0)
+const MULT_COLOR := Color(1.0, 0.55, 0.45, 1.0)
 
 var _hearts: Array[Sprite2D] = []
 var _sword_icon: Sprite2D
@@ -17,7 +18,7 @@ var _sword_label: Label
 var _toast: Label
 var _toast_timer := 0.0
 var _boss_label: Label
-var _tier_label: Label
+var _mult_label: Label
 
 
 func _ready() -> void:
@@ -53,14 +54,14 @@ func _ready() -> void:
 	_boss_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_boss_label.add_theme_constant_override("outline_size", 3)
 	add_child(_boss_label)
-	_tier_label = Label.new()
-	_tier_label.position = Vector2(10, 28)
-	_tier_label.size = Vector2(120, 12)
-	_tier_label.add_theme_font_size_override("font_size", 8)
-	_tier_label.add_theme_color_override("font_color", TIER_COLOR)
-	_tier_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	_tier_label.add_theme_constant_override("outline_size", 3)
-	add_child(_tier_label)
+	_mult_label = Label.new()
+	_mult_label.position = Vector2(10, 28)
+	_mult_label.size = Vector2(120, 12)
+	_mult_label.add_theme_font_size_override("font_size", 8)
+	_mult_label.add_theme_color_override("font_color", MULT_COLOR)
+	_mult_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_mult_label.add_theme_constant_override("outline_size", 3)
+	add_child(_mult_label)
 	GameState.hearts_changed.connect(_on_hearts_changed)
 	GameState.sword_changed.connect(_on_sword_changed)
 	GameState.boss_changed.connect(_on_boss_changed)
@@ -69,9 +70,9 @@ func _ready() -> void:
 	_on_boss_changed("", 0)  # built at title: no boss on screen yet
 
 
-func _on_boss_changed(boss_id: String, tier: int) -> void:
+func _on_boss_changed(boss_id: String, depth: int) -> void:
 	_boss_label.text = Rules.boss_display_name(boss_id)  # "" when no boss alive
-	_tier_label.text = "Harder x%d" % tier if tier > 0 else ""
+	_mult_label.text = Rules.mult_display(depth) if depth > 0 else ""
 
 
 func _process(delta: float) -> void:

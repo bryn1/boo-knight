@@ -38,12 +38,14 @@ var _frames: Array[Texture2D] = []
 var _anim_t := 0.0
 
 
-## tier (T6b difficulty): normal mobs get +1 hp / +1 contact per tier, bosses
-## keep their fixed law stats (rules.gd applies both the caps and the exemption).
-func setup(type: String, tier: int = 0) -> void:
+## depth (T7b gauntlet multiplier): inside a gauntlet level normal mobs get
+## roundi(stat * 1.25^depth) on BOTH hp and contact, uncapped (owner amendment
+## 2026-10-31); bosses keep their fixed law stats (rules.gd holds the exemption),
+## and handcrafted levels run at depth 0 = base stats.
+func setup(type: String, depth: int = 0) -> void:
 	mob_type = type
-	hp = Rules.mob_hp(type, tier)
-	touch_dmg = Rules.mob_touch_damage(type, tier)
+	hp = Rules.mob_hp(type, depth)
+	touch_dmg = Rules.mob_touch_damage(type, depth)
 
 
 func _enter_tree() -> void:

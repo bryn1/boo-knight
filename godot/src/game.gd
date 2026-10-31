@@ -1,15 +1,17 @@
 extends Node2D
 ## Game root (main scene): title screen -> levels 1..3 -> BOSS-KING GAUNTLET.
-## Killing the Vampire Lord no longer ends the game (T6b, MC 11740): every
-## boss kill raises the difficulty tier (capped) and the next king of the
-## ladder arrives in the arena — the player restarts the arena level (fresh
-## SPAWN_GRACE) each time. GAME OVER still restarts the WHOLE game (level 1,
-## wooden sword, 30 hearts, tier 0) on SPACE.
+## T7b law (MC 11782, owner ask 2026-10-31): when a boss dies, a procedurally
+## generated GAUNTLET LEVEL of upgraded monsters (x1.25 per depth, uncapped)
+## comes BEFORE the next king — clear its exit door and the arena holds the
+## next king of the ladder (fresh SPAWN_GRACE on every level load). GAME OVER
+## still restarts the WHOLE game (level 1, wooden sword, 30 hearts, depth 0)
+## on SPACE.
 
 const Art := preload("res://src/art.gd")
 const Rules := preload("res://src/rules.gd")
 const LevelScript := preload("res://src/level.gd")
 const HudScript := preload("res://src/hud.gd")
+const Gauntlet := preload("res://src/gauntlet.gd")
 
 const STATE_TITLE := 0
 const STATE_PLAYING := 1
@@ -68,6 +70,7 @@ var level_node: Node2D
 var hud: CanvasLayer
 var title_node: Node2D
 var overlay: CanvasLayer
+var on_gauntlet := false  # next level_done returns the player to the arena
 
 
 func _ready() -> void:
@@ -118,15 +121,9 @@ func _start_game() -> void:
 
 
 func _load_level(n: int) -> void:
-	state = STATE_PLAYING
-	GameState.level = n
-	title_node.visible = false
-	if level_node != null:
-		level_node.queue_free()
-		level_node = null
+	on_gauntlet = false
 	var data: Dictionary = LEVELS[n - 1].duplicate(true)
-	data["index"] = n
-	data["tier"] = GameState.difficulty_tier()  # normal mobs scale, bosses don't
+	data["index"] = n  # handcrafted levels carry no "depth": they never scale
 	var boss_id := ""
 	if n == ARENA_LEVEL:
 		# The lord's mob slot holds whoever the ladder says is next (T6b law 6:
@@ -135,6 +132,25 @@ func _load_level(n: int) -> void:
 		for m in data["mobs"]:
 			if m[0] == "vampire_lord":
 				m[0] = boss_id
+	_open_level(data, n, boss_id)
+
+
+## T7b law 1: a boss death opens a procedurally generated gauntlet level of
+## upgraded monsters BEFORE the next king. Same depth => same layout (gauntlet.gd
+## seeds on depth). Numbered as the arena: the gauntlet is the between-kings
+## loop and only the handcrafted walk reads GameState.level.
+func _load_gauntlet(depth: int) -> void:
+	on_gauntlet = true
+	_open_level(Gauntlet.generate(depth), ARENA_LEVEL, "")
+
+
+func _open_level(data: Dictionary, level_no: int, boss_id: String) -> void:
+	state = STATE_PLAYING
+	GameState.level = level_no
+	title_node.visible = false
+	if level_node != null:
+		level_node.queue_free()
+		level_node = null
 	GameState.set_boss_on_screen(boss_id)
 	level_node = Node2D.new()
 	level_node.set_script(LevelScript)
@@ -147,16 +163,19 @@ func _load_level(n: int) -> void:
 
 
 func _on_level_done() -> void:
-	if GameState.level < LEVELS.size():
+	if on_gauntlet:
+		# Gauntlet cleared (exit door): the next king of the ladder takes the arena.
+		_load_level(ARENA_LEVEL)
+	elif GameState.level < LEVELS.size():
 		_load_level(GameState.level + 1)
 
 
 func _on_boss_died() -> void:
-	# T6b law: no victory screen. Each boss kill raises the tier (capped at 3
-	# in rules.gd) and the next king of the ladder takes the lord's place; the
-	# arena reload spawns a fresh player, which carries the 3.0 s SPAWN_GRACE.
+	# T7b law: no victory screen. Each boss kill opens the next gauntlet depth
+	# (multiplier 1.25^depth in rules.gd); clearing it delivers the next king.
+	# The reload spawns a fresh player, which carries the 3.0 s SPAWN_GRACE.
 	GameState.on_boss_kill()
-	_load_level(ARENA_LEVEL)
+	_load_gauntlet(GameState.gauntlet_depth())
 
 
 func _on_player_died() -> void:

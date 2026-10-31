@@ -1,5 +1,6 @@
 extends Node2D
-## Hand-built level assembly from a data dictionary (see LEVELS in game.gd):
+## Level assembly from a data dictionary (see LEVELS in game.gd and the
+## generated gauntlet entries in gauntlet.gd — one shape, one system):
 ## ground as a TileMapLayer using tile_ground.png as the 16 px TileSet source,
 ## physics platforms, parallax night background, entities, camera limits.
 
@@ -171,7 +172,11 @@ func _spawn_entities() -> void:
 	var chest_tile: Variant = data.get("chest_tile", null)
 	if chest_tile != null:
 		var chest := _spawn_pickup(preload("res://src/chest.gd"), "chest", "", chest_tile, 19)
-		chest.chest_level = int(data["index"])
+		var gdepth: Variant = data.get("depth", null)
+		if gdepth != null:
+			chest.gauntlet_depth = int(gdepth)  # T7b: per-depth enchanted loot
+		else:
+			chest.chest_level = int(data["index"])
 	var exit_tile: Variant = data.get("exit_tile", null)
 	if exit_tile != null:
 		var door := Area2D.new()
@@ -200,7 +205,7 @@ func _spawn_mob(mtype: String, tx: int, row: int) -> CharacterBody2D:
 	mob.collision_layer = 8
 	mob.collision_mask = 1 | 2
 	mob.position = Vector2(tx * TILE + TILE * 0.5, row * TILE)
-	mob.setup(mtype, int(data.get("tier", 0)))  # T6b tier scales normal mobs only
+	mob.setup(mtype, int(data.get("depth", 0)))  # T7b x1.25 multiplier, gauntlet levels only
 	var size: Vector2 = Art.display_size(mtype)
 	mob.position.y -= size.y * 0.5
 	var sp := Art.make_sprite(mtype)

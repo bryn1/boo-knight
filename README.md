@@ -59,13 +59,25 @@ On a touch device: ◀ ▶ walk, ⚔ sword, ▲ jump.
 - The monsters are tougher in different ways — a slime is easy, a skeleton takes several
   hits. This is what the better swords are for.
 - **Three levels**, and at the end of the third one the **Vampire Lord** is waiting. When he
-  goes down, the **Boss-King Gauntlet** starts: a **Slime King**, a **Ghost King**, a
-  **Zombie King** and a **Skeleton King** arrive one after the other, and every boss you beat
-  makes the ordinary monsters a little tougher (up to **Harder x3**). After the Skeleton King,
-  the kings come back again from the Slime King — ever harder. There is no final screen: the
-  game simply continues, one crown at a time.
+  (or any later boss) goes down, a brand-new **gauntlet level** comes **before** the next
+  boss: its monsters are **upgraded** — every gauntlet level makes them **25 % tougher** at
+  both health and contact damage, and it **compounds** (a corner of the screen shows
+  *Harder x1.3*, *x1.6*, *x2.0* …, and there is no ceiling — deep levels get genuinely
+  beefy monsters, that is the fun of it). Clear the level's exit door and the next boss of
+  the **Boss-King Gauntlet** arrives in the arena: a **Slime King**, a **Ghost King**, a
+  **Zombie King** and a **Skeleton King**, one after the other, and after the Skeleton King
+  they come back again from the Slime King. The bosses themselves keep fixed stats — the
+  gauntlet levels are what keep climbing. There is no final screen: the game simply
+  continues, one crown at a time.
+- Each gauntlet level's chest holds one **enchanted diamond sword**: **Ice Diamond +1**,
+  **Flame Diamond +2**, **Lava Diamond +3**, **Wind Diamond +4** and **Storm Diamond +5** —
+  each with its own animated art (twinkling ice, flickering flames, pulsing lava, swirling
+  wind, splitting lightning) that shimmers while the hero holds it. One per gauntlet level
+  (five in all), and deeper chests hold bread instead. As always, a weaker sword never
+  takes a better one away.
 - If you run out of hearts, the whole adventure starts again from level 1 with the wooden
-  sword and full hearts. This is on purpose: it is how the old arcade games worked, it keeps
+  sword, full hearts and the gauntlet back at the start — enchanted swords and the
+  multiplier included. This is on purpose: it is how the old arcade games worked, it keeps
   the rule easy to understand, and it was the design the game was asked for.
 - Every level gives you a few safe seconds as soon as you appear, so a monster can't hit you
   the instant you spawn.
@@ -80,7 +92,7 @@ deliberate choice, and it is the one conversation-starter this game is good at.
 ## Made with
 
 [Godot 4](https://godotengine.org/) 4.7 (GDScript), exported for the browser. Every piece of
-pixel art — all 19 sprites plus 16 animation frames — was generated **locally on an RTX 3090
+pixel art — all 28 sprites plus 34 animation frames — was generated **locally on an RTX 3090
 in the family's home workshop**; no cloud art services. Built by the family's AI workshop.
 
 ## Building it yourself
@@ -94,7 +106,7 @@ GODOT=/path/to/Godot_v4.7.2-stable_linux.x86_64
 # link the art folder into the project and import the PNGs
 tools/sync_assets.sh
 
-# the rules gate: 24 assertions, must print "SIM PASS"
+# the rules gate: 67 assertions, must print "SIM PASS"
 "$GODOT" --headless --path godot -s res://tests/sim.gd
 
 # prove that gate can actually fail (planted-bad run, prints "SIM FAIL", exit 1)

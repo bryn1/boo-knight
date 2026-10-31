@@ -15,6 +15,7 @@ const JUMP_BUFFER := 0.12
 const ATTACK_ACTIVE := 0.12
 const FALL_DAMAGE_Y := 460.0
 const WALK_FPS := 7.0
+const SWORD_FPS := 8.0  # enchanted held-sword cycle (T7b law 4, like the kings' MOVE_ANIM)
 
 var facing := 1.0
 var attack_area: Area2D  # assigned by factory
@@ -30,6 +31,10 @@ var _attack_frames: Array[Texture2D]
 var _idle_tex: Texture2D
 var _anim_t := 0.0
 var _atk_t := 0.0
+var _sword_sprite: Sprite2D
+var _sword_key := "sword_wood"
+var _sword_frames: Array[Texture2D] = []
+var _sword_t := 0.0
 
 
 func _ready() -> void:
@@ -39,6 +44,25 @@ func _ready() -> void:
 	_idle_tex = Art.texture_for("hero")
 	_invuln = Rules.SPAWN_GRACE  # a fresh spawn (run or level start) blinks, un-hittable
 	attack_area.body_entered.connect(_on_attack_hit)
+	_sword_sprite = Art.make_sprite(String(Rules.SWORDS[GameState.sword]["icon"]))
+	_sword_sprite.name = "HeldSword"  # keep "Sprite2D" unique for get_node_or_null lookups
+	_sword_sprite.position = Vector2(11, -14)
+	add_child(_sword_sprite)  # after the hero sprite: the blade paints in front
+	_refresh_sword(GameState.sword)
+	GameState.sword_changed.connect(_refresh_sword)
+
+
+## Held-sword sprite follows the sword law (T7b): plain swords sit static on
+## their base frame; enchanted diamond swords cycle their _a/_b element anim
+## while held (~8 fps, same mechanism as the kings' MOVE_ANIM).
+func _refresh_sword(sword_id: String) -> void:
+	_sword_key = String(Rules.SWORDS[sword_id]["icon"])
+	if Art.has_anim(_sword_key):
+		_sword_frames = Art.frames_for(_sword_key)
+	else:
+		_sword_frames.assign([Art.texture_for(_sword_key)])  # plain swords sit static
+	_sword_t = 0.0
+	Art.apply_frame(_sword_sprite, _sword_key, _sword_frames[0])
 
 
 ## Sword arc connects with a mob: sword damage + knockback (mob flashes/poofs).
@@ -91,6 +115,13 @@ func _physics_process(delta: float) -> void:
 
 	if _sprite != null:
 		_sprite.flip_h = facing < 0.0  # art faces right; visuals only, hitbox uses facing
+
+	_sword_sprite.flip_h = facing < 0.0
+	_sword_sprite.position.x = 11.0 * facing
+	if _sword_frames.size() > 1:  # enchanted: cycle the element frames while held
+		_sword_t += delta
+		Art.apply_frame(_sword_sprite, _sword_key,
+			_sword_frames[int(_sword_t * SWORD_FPS) % _sword_frames.size()])
 
 	move_and_slide()
 
