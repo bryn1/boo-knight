@@ -127,7 +127,10 @@ func _poof() -> void:
 	# changing collision state mid-flush errors in-engine. Defer both (MC 11740 follow-up).
 	set_deferred("collision_layer", 0)
 	set_deferred("collision_mask", 0)
-	died.emit(mob_type)
+	# Emit deferred too: game.gd's boss-death chain BUILDS a whole level (new
+	# collision shapes) mid-flush, which errors the same way (MC 11798).
+	# (Signal.emit_deferred does not exist in Godot 4.7.2 — probe-proven idiom.)
+	call_deferred("emit_signal", "died", mob_type)
 	if _sprite != null:
 		_sprite.flip_h = false
 		var t := create_tween()

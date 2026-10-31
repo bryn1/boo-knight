@@ -102,10 +102,12 @@ func _physics_process(delta: float) -> void:
 		_atk_t = 0.0
 	if _attack_time > 0.0:
 		_attack_time -= delta
-		attack_area.monitoring = true
+		# _physics_process runs inside the physics flush; toggling monitoring
+		# directly errors in the web build (MC 11798). Defer both branches.
+		attack_area.set_deferred("monitoring", true)
 		attack_area.position = Vector2(17.0 * facing, -24.0)
 	else:
-		attack_area.monitoring = false
+		attack_area.set_deferred("monitoring", false)
 
 	_invuln -= delta
 	if _sprite != null:

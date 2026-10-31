@@ -11,4 +11,6 @@ func _ready() -> void:
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player"):
-		reached.emit()
+		# body_entered fires inside the physics flush; the level_done chain
+		# rebuilds the whole level (new collision shapes) mid-flush (MC 11798).
+		call_deferred("emit_signal", "reached")
