@@ -16,6 +16,16 @@ const ATTACK_ACTIVE := 0.12
 const FALL_DAMAGE_Y := 460.0
 const WALK_FPS := 7.0
 const SWORD_FPS := 8.0  # enchanted held-sword cycle (T7b law 4, like the kings' MOVE_ANIM)
+## Held-sword overlay anchors (T8b, MC 11810 — hero art is empty-handed since
+## MC 11809; this Sprite2D is the ONE visible sword). Rest: hilt in the right
+## fist, blade diagonal up-forward (the PNG's natural angle, rotation 0); the
+## brief's (9,-6) floated the hilt off the fist — adjusted once per the QA
+## duty, composites in .audits/T8b-composites are the law photo.
+const SWORD_REST := Vector2(7, -2)
+const SWORD_FIST := Vector2(11, -10)  # extended-fist anchor while attacking
+## Forward-sweep law lives in rules.gd (sweep_angle, SWEEP_FWD=0.79 — the
+## closer geometry ruling: blade horizontal straight forward through the
+## extended fist); facing left mirrors the angle sign here via * facing.
 
 var facing := 1.0
 var attack_area: Area2D  # assigned by factory
@@ -46,7 +56,7 @@ func _ready() -> void:
 	attack_area.body_entered.connect(_on_attack_hit)
 	_sword_sprite = Art.make_sprite(String(Rules.SWORDS[GameState.sword]["icon"]))
 	_sword_sprite.name = "HeldSword"  # keep "Sprite2D" unique for get_node_or_null lookups
-	_sword_sprite.position = Vector2(11, -14)
+	_sword_sprite.position = SWORD_REST  # hilt in the fist, blade up-forward (T8b)
 	add_child(_sword_sprite)  # after the hero sprite: the blade paints in front
 	_refresh_sword(GameState.sword)
 	GameState.sword_changed.connect(_refresh_sword)
@@ -105,7 +115,7 @@ func _physics_process(delta: float) -> void:
 		# _physics_process runs inside the physics flush; toggling monitoring
 		# directly errors in the web build (MC 11798). Defer both branches.
 		attack_area.set_deferred("monitoring", true)
-		attack_area.position = Vector2(17.0 * facing, -24.0)
+		attack_area.position = Vector2(Rules.ATTACK_REACH_X * facing, -24.0)
 	else:
 		attack_area.set_deferred("monitoring", false)
 
@@ -119,7 +129,14 @@ func _physics_process(delta: float) -> void:
 		_sprite.flip_h = facing < 0.0  # art faces right; visuals only, hitbox uses facing
 
 	_sword_sprite.flip_h = facing < 0.0
-	_sword_sprite.position.x = 11.0 * facing
+	if _attack_time > 0.0:
+		# T8b forward sweep: overlay rides the extended fist and sweeps to
+		# straight forward; facing left mirrors the angle sign (flip_h).
+		_sword_sprite.position = Vector2(SWORD_FIST.x * facing, SWORD_FIST.y)
+		_sword_sprite.rotation = Rules.sweep_angle(1.0 - _attack_time / ATTACK_ACTIVE) * facing
+	else:
+		_sword_sprite.position = Vector2(SWORD_REST.x * facing, SWORD_REST.y)
+		_sword_sprite.rotation = 0.0
 	if _sword_frames.size() > 1:  # enchanted: cycle the element frames while held
 		_sword_t += delta
 		Art.apply_frame(_sword_sprite, _sword_key,

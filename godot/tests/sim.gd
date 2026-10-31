@@ -56,6 +56,8 @@ func _initialize() -> void:
 	_check_gauntlet_law()
 	_check_multiplier_law()
 	_check_generator()
+	_check_sword_reach_law()
+	_check_sweep_law()
 	if _fails == 0:
 		print("SIM PASS")
 		quit(0)
@@ -226,6 +228,49 @@ func _check_multiplier_law() -> void:
 	_check("8: depth reset on death -> depth 0 and lord is the next boss again",
 		Rules.depth_for_boss_kills(int(after["boss_kills"])) == 0 \
 		and Rules.next_boss_after(int(after["boss_kills"])) == "vampire_lord")
+
+
+## T8b sword-reach law (MC 11810, owner 2026-10-31 "attack ramge could be
+## increased slightly"): attack area centre 22 px ahead, half-extent 10 px ->
+## hit band [12, 32] px ahead, ONLY during the attack window (at rest the area
+## is un-monitored and nothing is hit at any distance).
+func _check_sword_reach_law() -> void:
+	_check("10: reach law — attack centre 22 px, half-extent 10 px",
+		Rules.ATTACK_REACH_X == 22.0 and Rules.ATTACK_REACH_HALF == 10.0)
+	_check("10: business — mob 28 px ahead IS hit during the attack window",
+		Rules.sword_hits(28.0, true))
+	_check("10: business — mob 30 px ahead NOT hit at rest",
+		not Rules.sword_hits(30.0, false))
+	var rest_clear := true
+	for d in [0.0, 12.0, 22.0, 28.0, 30.0, 32.0, 100.0]:
+		rest_clear = rest_clear and not Rules.sword_hits(d, false)
+	_check("10: at rest nothing is hit at any distance", rest_clear)
+	_check("10: band edges closed — 12 and 32 hit, 11 and 33 miss",
+		Rules.sword_hits(12.0, true) and Rules.sword_hits(32.0, true) \
+		and not Rules.sword_hits(11.0, true) and not Rules.sword_hits(33.0, true))
+
+
+## T8b forward-sweep law (MC 11810, owner 2026-10-31 "a sword pointing STRAIGHT
+## FORWARD in a sweeping motion"). CLOSER GEOMETRY RULING 2026-10-31: hold =
+## 0.79 rad = the sword PNG's natural 45.2 deg blade-up + 44 deg => horizontal
+## straight-forward through the fist; the brief's 0.15 left it ~36 deg UP.
+## Wind-up -1.0 by 25%, sweep to 0.79 by 55%, hold to 85%, rest by window end.
+func _check_sweep_law() -> void:
+	_check("10: sweep hold pin — SWEEP_FWD == 0.79 rad (horizontal, closer ruling)",
+		is_equal_approx(Rules.SWEEP_FWD, 0.79))
+	_check("10: sweep rest (p=0) is level 0 rad", is_equal_approx(Rules.sweep_angle(0.0), 0.0))
+	_check("10: sweep wind-up peaks at -1.0 rad by 25%",
+		is_equal_approx(Rules.sweep_angle(0.25), Rules.SWEEP_RAISED) \
+		and Rules.sweep_angle(0.125) > Rules.SWEEP_RAISED and Rules.sweep_angle(0.125) < 0.0)
+	_check("10: sweep reaches hold value 0.79 by 55% and holds to 85%",
+		is_equal_approx(Rules.sweep_angle(0.55), Rules.SWEEP_FWD) \
+		and is_equal_approx(Rules.sweep_angle(0.7), Rules.SWEEP_FWD) \
+		and is_equal_approx(Rules.sweep_angle(0.85), Rules.SWEEP_FWD))
+	_check("10: sweep returns to rest 0 rad by window end",
+		is_equal_approx(Rules.sweep_angle(1.0), 0.0) \
+		and Rules.sweep_angle(0.9) > 0.0 and Rules.sweep_angle(0.9) < Rules.SWEEP_FWD)
+	_check("10: mid-sweep (0.25..0.55) rises from -1.0 toward 0.79",
+		Rules.sweep_angle(0.3) > Rules.SWEEP_RAISED and Rules.sweep_angle(0.5) < Rules.SWEEP_FWD)
 
 
 ## T7b law 7: deterministic seeded generator — same depth => byte-identical

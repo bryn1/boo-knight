@@ -148,7 +148,7 @@ func _spawn_player() -> void:
 	attack.monitoring = false
 	var ashape := CollisionShape2D.new()
 	var arect := RectangleShape2D.new()
-	arect.size = Vector2(26, 22)
+	arect.size = Vector2(Rules.ATTACK_REACH_HALF * 2.0, 22.0)  # T8b reach law (MC 11810)
 	ashape.shape = arect
 	attack.add_child(ashape)
 	p.add_child(attack)

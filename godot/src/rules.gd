@@ -73,6 +73,26 @@ const GAUNTLET_CHEST := {1: "diamond_ice", 2: "diamond_flame", 3: "diamond_lava"
 	4: "diamond_wind", 5: "diamond_storm"}
 
 const ATTACK_COOLDOWN := 0.35  # seconds between sword swings
+## Sword-reach law (T8b, MC 11810 — owner 2026-10-31 "attack ramge could be
+## increased slightly"): during the attack window the attack Area2D sits
+## ATTACK_REACH_X px ahead of the hero centre with ATTACK_REACH_HALF px
+## half-extent along x (new 22/10, band 12..32). At rest the area is
+## un-monitored, so nothing is ever hit outside the attack window. The runtime
+## wires these same constants (level.gd rect, player.gd area position);
+## tests/sim.gd asserts the business law through sword_hits().
+const ATTACK_REACH_X := 22.0
+const ATTACK_REACH_HALF := 10.0
+## Forward-sweep law (T8b, MC 11810 — owner 2026-10-31 "a sword pointing
+## STRAIGHT FORWARD in a sweeping motion"): across the attack window the held
+## sword overlay rotation goes rest 0 -> SWEEP_RAISED (wind-up back) by 25%,
+## sweeps to SWEEP_FWD by 55%, holds to 85%, returns to rest by window end.
+## CLOSER GEOMETRY RULING 2026-10-31: the sword PNG's natural blade angle is
+## 45.2 deg UP, so straight-forward (horizontal) is 0.79 rad (45.2 deg + 44);
+## the brief's 0.15 left the blade ~36 deg UP — composites /tmp/sweep-hold
+## _0p15.png vs _0p79.png prove the level thrust. player.gd mirrors the sign
+## when facing left; tests/sim.gd pins the law through sweep_angle().
+const SWEEP_RAISED := -1.0
+const SWEEP_FWD := 0.79
 const INVULN_TIME := 0.8  # seconds of player invulnerability after a hit
 ## Kid-friendly grace: seconds of contact-damage immunity at the start of every
 ## run AND every level (the player node is freshly spawned for each).
@@ -81,6 +101,27 @@ const SPAWN_GRACE := 3.0
 
 static func sword_damage(sword: String) -> int:
 	return int(SWORDS[sword]["dmg"])
+
+
+## Reach law as a pure band test (tests/sim.gd business assertions): a target
+## centre at `dist` px directly ahead is struck iff the attack is up and the
+## distance lies inside the Area2D band [x-half, x+half]. At rest nothing is
+## hit at ANY distance (the area is un-monitored outside the attack window).
+static func sword_hits(dist: float, attacking: bool) -> bool:
+	return attacking and dist >= ATTACK_REACH_X - ATTACK_REACH_HALF \
+		and dist <= ATTACK_REACH_X + ATTACK_REACH_HALF
+
+
+## Forward-sweep law as a pure function of window progress p (0..1). player.gd
+## rotates the overlay by this * facing (facing mirrors the sign when flipped).
+static func sweep_angle(p: float) -> float:
+	if p < 0.25:
+		return lerpf(0.0, SWEEP_RAISED, p / 0.25)
+	if p < 0.55:
+		return lerpf(SWEEP_RAISED, SWEEP_FWD, (p - 0.25) / 0.3)
+	if p < 0.85:
+		return SWEEP_FWD
+	return lerpf(SWEEP_FWD, 0.0, (p - 0.85) / 0.15)
 
 
 static func sword_label(sword: String) -> String:
